@@ -1,9 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const db = require("./models");
 
-const Users = db.users;
+//import routes
+const usersRoutes = require("./routes/users");
+
 
 const app = express();
 
@@ -19,25 +20,8 @@ app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//simple route
-app.get("/", (req, res) => {
-
-    Users.create({
-        id:2,
-        firstName: "Jhon",
-        lastName: "Doe"
-    }).then(data => {
-        console.log("data : ", data);
-        // res.send(data);
-      })
-      .catch(err => {
-        console.log("err : ", err);
-        // res.status(500).send({
-        //   message: err.message || "Some error occurred while creating the Book."
-        // });
-      });
-  res.json({ message: "Welcome to H&T" });
-});
+//my routes
+app.use("/api", usersRoutes);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
