@@ -1,5 +1,5 @@
 var express = require("express");
-const { createUserController, deleteUserController, loginController } = require("../controllers/users");
+const { createUserController, deleteUserController, loginController, registerController } = require("../controllers/users");
 var router = express.Router();
 
 

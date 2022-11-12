@@ -1,36 +1,93 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
-const Users = db.users;
+const User = db.user;
 
-exports.createUserController = (req, res) => {
+exports.registerController = async (req, res) => {
   console.log("REQ : ", req.body);
 
   // destructor the fields
-  const { firstName, lastName } = req.body;
+  const {
+    firstName,
+    lastName,
+    password,
+    email,
+    city,
+    state,
+    country,
+    phoneno,
+    website,
+    aboutme,
+    descriptionofservices,
+    wellnesskeywords,
+    qualification,
+    ip
+  } = req.body;
 
-  if (!firstName || !lastName) {
+  if (
+    !firstName ||
+    !lastName ||
+    !password ||
+    !email ||
+    !city ||
+    !state ||
+    !country ||
+    !phoneno ||
+    !website ||
+    !aboutme ||
+    !descriptionofservices ||
+    !wellnesskeywords ||
+    !qualification ||
+    !ip
+  ) {
     return res.status(400).json({
       error: "Please include all fields",
     });
   }
 
-  Users.create({
-    // id:2,
-    firstName,
-    lastName,
-  })
-    .then((data) => {
-      console.log("data : ", data);
-      // res.send(data);
-    })
-    .catch((err) => {
-      console.log("err : ", err);
-      // res.status(500).send({
-      //   message: err.message || "Some error occurred while creating the Book."
-      // });
+  // checking if the user already exist or not
+  const foundUser = await User.findOne({ where: { email: email } });
+  if (foundUser)
+    return res.status(409).json({
+      error: "User already exist",
     });
-  res.json({ message: "Welcome to H&T" });
+
+    // generating password hash
+    bcrypt.hash(password, 10, function(err, hash) {
+      // Store hash in your password DB.
+      if (err) {
+        console.log("err : ", err );
+      } else {
+        console.log("hash : ", hash);
+        User.create({
+          firstName,
+          lastName,
+          password: hash,
+          email,
+          city,
+          state,
+          country,
+          phoneno,
+          website,
+          aboutme,
+          descriptionofservices,
+          wellnesskeywords,
+          qualification,
+          ip,
+        })
+          .then((data) => {
+            console.log("data : ", data);
+            res.json({ message: `User ${firstName} ${lastName}, created successfully` });
+            // res.send(data);
+          })
+          .catch((err) => {
+            console.log("err : ", err);
+            // res.status(500).send({
+            //   message: err.message || "Some error occurred while creating the Book."
+            // });
+          });
+      }
+  });
 };
 
 exports.deleteUserController = (req, res) => {
@@ -39,160 +96,56 @@ exports.deleteUserController = (req, res) => {
   res.json({ message: "Welcome to H&T" });
 };
 
-exports.loginController = (req, res) => {
+exports.loginController = async(req, res) => {
   console.log("REQ : ", req.body);
 
-  res.json({ message: "Welcome to H&T" });
-};
+    // destructor the fields
+    const {
+      password,
+      email,
+    } = req.body;
 
-exports.registerController = (req, res) => {
-  console.log("REQ : ", req.body);
+  // getting the user from DB using the email
+  const foundUser = await User.findOne({ where: { email: email } });
 
-  res.json({ message: "Welcome to H&T" });
-};
-
-exports.create = async(req, res) => {
-  try {
-    if (!req.body) {
-      return res.status(400).send({
-        message: "Please Fill all details",
-      });
-    }
-
-    const foundUser = await Users.findOne({ where:{ "email" : req.body.email }});
-    if(foundUser) return res.status(409).json({
-      error: "User already exist"
+  // if user doesn't exist
+  if (!foundUser) {
+    return res.status(400).json({
+      message: "User doesn't exist",
     });
 
-    var salt = bcrypt.genSaltSync(10);
-    var hash = bcrypt.hashSync(req.body.password, salt);
-    const user = new User({
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        email: req.body.email,
-        address: req.body.address,
-        gender: req.body.gender,
-        password: hash,
-        salt: salt,
-    });
-
-    user
-    .save()
-    .then((result) => {
-      console.log(result); // info log
-      res.status(201).json({
-        message: "User sucessfully created",
-      });
-    })
-    .catch((err) => {
-      console.log(err); // to be modified
-      res.status(500).json({
-        error: err,
-      });
-    });
-  } catch (error) {
-    res.status(500).json({
-      error
-    });
-  }
-
-}
-
-
-exports.login = (req, res) => {
-    User.find({ email: req.body.email })
-      .exec()
-      .then((user) => {
-        if (user.length < 1) {
-          return res.status(400).json({
-            message: "User doesn't exist",
-          });
-        } else if (!bcrypt.compareSync(req.body.password, user[0].password)) {
-          return res.status(400).json({
-            message: "Wrong Password",
-          });
-        }
+  // if user exist
+  }else {
+    // comparing the password
+    bcrypt.compare(password, foundUser.dataValues.password, function(err, result) {
+      // if the password is not valid
+      if (!result) {
+        return res.status(400).json({
+          message: "Password doesn't match",
+        });
+        // if the password is valid
+      }else{
+        // generating JWT
         const token = jwt.sign(
           {
-            id: user[0]._id,
-            email: user[0].email,
+            id: foundUser.dataValues.id,
+            email: foundUser.dataValues.email,
           },
-          "R6ji0xEwESbQ8oTrGf4MFvxdmDgw2NB8",
+          "secrete",
           {
             expiresIn: "7 days",
           }
         );
-        return res.status(200).json({
-          message: "Login successful",
-          userDetails: user[0]._id,
-          token: token,
-          first_name: user[0].first_name
-        });
-    })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json({
-          error: err,
-        });
-    });
+
+        res.json({ message: "Logged in successfully", token: token, email: foundUser.dataValues.email });
+      }
+  });
+  }
+
 };
 
-exports.viewProfile = async(req, res) => {
-  try {
-    if(!req.user) return res.sendStatus(401)
-    const foundUser = await User.findOne({ "_id" : req.user.id, "email": req.user.email });
-    console.log(foundUser)
-    if(foundUser) return res.status(200).json({
-      first_name: foundUser.first_name,
-      last_name: foundUser.last_name,
-      email: foundUser.email,
-      address: foundUser.address,
-      gender: foundUser.gender,
-      avatar: foundUser.avatar,
-    });
-    else return res.sendStatus(404)
+exports.createUserController = (req, res) => {
+  console.log("REQ : ", req.body);
 
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      error: error,
-    });
-  }
-}
-
-exports.editProfile = async(req, res) => {
-  try {
-    let updatedUser
-    if(req.file){
-      updatedUser = await User.findOneAndUpdate(
-        { "_id" : req.user.id, "email": req.user.email },
-        {
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          email: req.body.email,
-          address: req.body.address,
-          gender: req.body.gender,
-          avatar: req.file.filename
-        }
-      )
-    } else {
-      updatedUser = await User.findOneAndUpdate(
-        { "_id" : req.user.id, "email": req.user.email },
-        {
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          email: req.body.email,
-          address: req.body.address,
-          gender: req.body.gender,
-        }
-      )
-    }
-    if(updatedUser) res.sendStatus(204)
-    else res.sendStatus(400)
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      error: error,
-    });
-  }
-}
+  res.json({ message: "Welcome to H&T" });
+};
