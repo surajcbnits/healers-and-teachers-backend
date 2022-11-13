@@ -1,12 +1,16 @@
 var express = require("express");
-const { createUserController, deleteUserController, loginController, registerController } = require("../controllers/users");
+const {
+  updateUserController,
+  deleteUserController,
+  loginController,
+  registerController,
+} = require("../controllers/users");
+const { isLogin } = require("../middleware");
 var router = express.Router();
-
 
 router.post("/register", registerController);
 router.post("/login", loginController);
 router.delete("/deleteUser", deleteUserController);
-router.post("/createUser", createUserController);
-
+router.put("/updateUser", isLogin, updateUserController);
 
 module.exports = router;

@@ -144,8 +144,60 @@ exports.loginController = async(req, res) => {
 
 };
 
-exports.createUserController = (req, res) => {
-  console.log("REQ : ", req.body);
+exports.updateUserController = async(req, res) => {
 
-  res.json({ message: "Welcome to H&T" });
+  console.log("req.tokenDecodedData : ", req.tokenDecodedData);
+  
+  // destructor the fields
+  const {
+    firstName,
+    lastName,
+    email,
+    city,
+    state,
+    country,
+    phoneno,
+    website,
+    aboutme,
+    descriptionofservices,
+    wellnesskeywords,
+    qualification,
+    ip
+  } = req.body;
+
+  if (req.tokenDecodedData.email != email) {
+    return res.status(403).json({
+      error: "user can only update their own data!",
+    });
+  }
+
+  try {
+    await User.update({ 
+      firstName,
+      lastName,
+      email,
+      city,
+      state,
+      country,
+      phoneno,
+      website,
+      aboutme,
+      descriptionofservices,
+      wellnesskeywords,
+      qualification,
+      ip
+     }, {
+      where: {
+        email: email
+      }
+    });
+    res.status(200).json({
+      error: "User updated successfully",
+    });
+  } catch (error) {
+    console.log("ERROR : ", error);
+    res.status(500).json({
+      error: "Something went wrong, while updating the user",
+    });
+  }
 };
