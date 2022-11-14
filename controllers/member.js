@@ -134,7 +134,14 @@ exports.loginController = async(req, res) => {
       email,
     } = req.body;
 
-    //todo : need to check for the body
+    if (
+      !password ||
+      !email 
+    ) {
+      return res.status(400).json({
+        error: "Email and password are required!",
+      });
+    }
 
   // getting the user from DB using the email
   const foundUser = await User.findOne({ where: { email: email } });
