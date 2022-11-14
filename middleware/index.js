@@ -5,7 +5,7 @@ exports.isLogin = (req, res, next) => {
   if (req.header("authorization")) {
     try {
       const token = req.header("authorization").split(" ")[1]
-      var decoded = jwt.verify(token, "secret");
+      var decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("decoded : ", decoded);
       req.tokenDecodedData = decoded;
       next();

@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
-const User = db.user;
+const Member = db.member;
 
 exports.registerController = async (req, res) => {
   console.log("REQ : ", req.body);
@@ -46,7 +46,7 @@ exports.registerController = async (req, res) => {
   }
 
   // checking if the user already exist or not
-  const foundUser = await User.findOne({ where: { email: email } });
+  const foundUser = await Member.findOne({ where: { email: email } });
   if (foundUser)
     return res.status(409).json({
       error: "Email id already in use",
@@ -60,38 +60,40 @@ exports.registerController = async (req, res) => {
         // Store hash in your DB.
         console.log("hash : ", hash);
 
+
+        // todo : add unique username for every user
         let username = firstName + lastName;
         
 
-        let gotUniqueUsername = false
+        // let gotUniqueUsername = false
         
-        while (!gotUniqueUsername) {
+        // while (!gotUniqueUsername) {
 
-          console.log('username :>> ', username);
+        //   console.log('username :>> ', username);
 
-          let findUserByUserName = await User.findOne({ where: { username: username } });
+        //   let findUserByUserName = await Member.findOne({ where: { username: username } });
 
-          if (findUserByUserName) {
-            console.log('get into if :>> ');
+        //   if (findUserByUserName) {
+        //     console.log('get into if :>> ');
 
-            const lastCharacter = username.charAt(username.length-1);
-            if (!isNaN(lastCharacter)) {
+        //     const lastCharacter = username.charAt(username.length-1);
+        //     if (!isNaN(lastCharacter)) {
               
-            }
-          // console.log('inner username ', username);
-          } else {
-            gotUniqueUsername = true
-          }
-        }
+        //     }
+        //   // console.log('inner username ', username);
+        //   } else {
+        //     gotUniqueUsername = true
+        //   }
+        // }
 
-        console.log('gotUniqueUsername', gotUniqueUsername)
+        // console.log('gotUniqueUsername', gotUniqueUsername)
         console.log('username:>> ', username);
 
-        User.create({
+        Member.create({
           firstName,
           lastName,
           password: hash,
-          username: username,
+          username: firstName + lastName,
           email,
           city,
           state,
@@ -106,7 +108,7 @@ exports.registerController = async (req, res) => {
         })
           .then((data) => {
             console.log("data : ", data);
-            res.json({ message: `User ${firstName} ${lastName}, created successfully` });
+            res.json({ message: `Member ${firstName} ${lastName}, created successfully` });
             // res.send(data);
           })
           .catch((err) => {
@@ -144,16 +146,20 @@ exports.loginController = async(req, res) => {
     }
 
   // getting the user from DB using the email
-  const foundUser = await User.findOne({ where: { email: email } });
+  const foundUser = await Member.findOne({ where: { email: email } });
 
   // if user doesn't exist
   if (!foundUser) {
     return res.status(400).json({
-      message: "User doesn't exist",
+      message: "Member doesn't exist",
     });
 
   // if user exist
   }else {
+
+
+    console.log('process.env.JWT_SECRET : ', process.env.JWT_SECRET )
+
     // comparing the password
     bcrypt.compare(password, foundUser.dataValues.password, function(err, result) {
       // if the password is not valid
@@ -169,7 +175,7 @@ exports.loginController = async(req, res) => {
             id: foundUser.dataValues.id,
             email: foundUser.dataValues.email,
           },
-          "secret",
+          process.env.JWT_SECRET,
           {
             expiresIn: "7 days",
           }
@@ -210,7 +216,7 @@ exports.updateMemberController = async(req, res) => {
   }
 
   try {
-    await User.update({ 
+    await Member.update({ 
       firstName,
       lastName,
       email,
@@ -230,7 +236,7 @@ exports.updateMemberController = async(req, res) => {
       }
     });
     res.status(200).json({
-      error: "User updated successfully",
+      error: "Member updated successfully",
     });
   } catch (error) {
     console.log("ERROR : ", error);
