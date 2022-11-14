@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 //import routes
-const usersRoutes = require("./routes/users");
+const memberRoutes = require("./routes/member");
 
 
 const app = express();
@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //my routes
-app.use("/api", usersRoutes);
+app.use("/api", memberRoutes);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

@@ -1,16 +1,16 @@
 var express = require("express");
 const {
-  updateUserController,
-  deleteUserController,
+  updateMemberController,
+  deleteMemberController,
   loginController,
   registerController,
-} = require("../controllers/users");
+} = require("../controllers/member");
 const { isLogin } = require("../middleware");
 var router = express.Router();
 
 router.post("/register", registerController);
 router.post("/login", loginController);
-router.delete("/deleteUser", deleteUserController);
-router.put("/updateUser", isLogin, updateUserController);
+router.delete("/deleteMember", deleteMemberController);
+router.put("/updateMember", isLogin, updateMemberController);
 
 module.exports = router;

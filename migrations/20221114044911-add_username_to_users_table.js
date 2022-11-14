@@ -4,10 +4,10 @@
 module.exports = {
   async up (queryInterface, Sequelize) {
     return Promise.all([
-      queryInterface.removeColumn(
-        'users', // table name
-        'salt', // new field name
-      ),
+      queryInterface.addColumn('users', 'username', {
+        type: Sequelize.STRING,
+        allowNull: false,
+      })
     ]);
   },
 

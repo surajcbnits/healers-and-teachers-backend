@@ -49,20 +49,49 @@ exports.registerController = async (req, res) => {
   const foundUser = await User.findOne({ where: { email: email } });
   if (foundUser)
     return res.status(409).json({
-      error: "User already exist",
+      error: "Email id already in use",
     });
 
     // generating password hash
-    bcrypt.hash(password, 10, function(err, hash) {
-      // Store hash in your password DB.
+    bcrypt.hash(password, 10, async function(err, hash) {
       if (err) {
         console.log("err : ", err );
       } else {
+        // Store hash in your DB.
         console.log("hash : ", hash);
+
+        let username = firstName + lastName;
+        
+
+        let gotUniqueUsername = false
+        
+        while (!gotUniqueUsername) {
+
+          console.log('username :>> ', username);
+
+          let findUserByUserName = await User.findOne({ where: { username: username } });
+
+          if (findUserByUserName) {
+            console.log('get into if :>> ');
+
+            const lastCharacter = username.charAt(username.length-1);
+            if (!isNaN(lastCharacter)) {
+              
+            }
+          // console.log('inner username ', username);
+          } else {
+            gotUniqueUsername = true
+          }
+        }
+
+        console.log('gotUniqueUsername', gotUniqueUsername)
+        console.log('username:>> ', username);
+
         User.create({
           firstName,
           lastName,
           password: hash,
+          username: username,
           email,
           city,
           state,
@@ -90,7 +119,7 @@ exports.registerController = async (req, res) => {
   });
 };
 
-exports.deleteUserController = (req, res) => {
+exports.deleteMemberController = (req, res) => {
   console.log("REQ : ", req.body);
 
   res.json({ message: "Welcome to H&T" });
@@ -104,6 +133,8 @@ exports.loginController = async(req, res) => {
       password,
       email,
     } = req.body;
+
+    //todo : need to check for the body
 
   // getting the user from DB using the email
   const foundUser = await User.findOne({ where: { email: email } });
@@ -131,7 +162,7 @@ exports.loginController = async(req, res) => {
             id: foundUser.dataValues.id,
             email: foundUser.dataValues.email,
           },
-          "secrete",
+          "secret",
           {
             expiresIn: "7 days",
           }
@@ -144,7 +175,7 @@ exports.loginController = async(req, res) => {
 
 };
 
-exports.updateUserController = async(req, res) => {
+exports.updateMemberController = async(req, res) => {
 
   console.log("req.tokenDecodedData : ", req.tokenDecodedData);
   
