@@ -61,39 +61,22 @@ exports.registerController = async (req, res) => {
         console.log("hash : ", hash);
 
 
-        // todo : add unique username for every user
-        let username = firstName + lastName;
-        
+        let username = `${firstName}${lastName}`;
+        let user = await Member.findOne({ where: { username: username } });
+        let number = 0;
 
-        // let gotUniqueUsername = false
-        
-        // while (!gotUniqueUsername) {
-
-        //   console.log('username :>> ', username);
-
-        //   let findUserByUserName = await Member.findOne({ where: { username: username } });
-
-        //   if (findUserByUserName) {
-        //     console.log('get into if :>> ');
-
-        //     const lastCharacter = username.charAt(username.length-1);
-        //     if (!isNaN(lastCharacter)) {
-              
-        //     }
-        //   // console.log('inner username ', username);
-        //   } else {
-        //     gotUniqueUsername = true
-        //   }
-        // }
-
-        // console.log('gotUniqueUsername', gotUniqueUsername)
+        while(user) {
+            number++;
+            username = `${firstName}${lastName}${number}`;
+            user =  await Member.findOne({ where: { username: username } });
+        }
         console.log('username:>> ', username);
 
         Member.create({
           firstName,
           lastName,
           password: hash,
-          username: firstName + lastName,
+          username: username,
           email,
           city,
           state,
@@ -113,9 +96,9 @@ exports.registerController = async (req, res) => {
           })
           .catch((err) => {
             console.log("err : ", err);
-            // res.status(500).send({
-            //   message: err.message || "Some error occurred while creating the Book."
-            // });
+            res.status(500).json({
+              message: err.message || "Some error occurred while creating the Member."
+            });
           });
       }
   });
