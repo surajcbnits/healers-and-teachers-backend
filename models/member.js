@@ -1,7 +1,7 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
+
+
 module.exports = (sequelize, DataTypes) => {
   class Member extends Model {
     /**
@@ -13,25 +13,67 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Member.init({
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
-    username: DataTypes.STRING,
-    email: DataTypes.STRING,
-    city: DataTypes.STRING,
-    state: DataTypes.STRING,
-    password: DataTypes.STRING,
-    country: DataTypes.STRING,
-    phoneno: DataTypes.STRING,
-    website: DataTypes.STRING,
-    aboutme: DataTypes.STRING,
-    descriptionofservices: DataTypes.STRING,
-    wellnesskeywords: DataTypes.STRING,
-    qualification: DataTypes.STRING,
-    ip: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'Member',
-  });
+  Member.init(
+    {
+      firstName: {
+        type: DataTypes.STRING(30),
+        allowNull: false,
+      },
+      lastName: {
+        type: DataTypes.STRING(30),
+        allowNull: false,
+      },
+      username: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      email: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+      },
+      city: {
+        type: DataTypes.STRING(30),
+        allowNull: false,
+      },
+      state: {
+        type: DataTypes.STRING(30),
+        allowNull: false,
+      },
+      password: DataTypes.STRING,
+      country: {
+        type: DataTypes.STRING(30),
+        allowNull: true,
+        defaultValue: "USA"
+      },
+      phoneno: {
+        type: DataTypes.STRING(30),
+        allowNull: true,
+      },
+      website: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      aboutme: {
+        type: DataTypes.STRING(500),
+        allowNull: false,
+      },
+      descriptionofservices: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      qualification: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      ip: {
+        type: DataTypes.STRING(30),
+        allowNull: true,
+      },
+    },
+    {
+      sequelize,
+      modelName: "Member",
+    }
+  );
   return Member;
 };

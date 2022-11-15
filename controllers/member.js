@@ -19,7 +19,6 @@ exports.registerController = async (req, res) => {
     website,
     aboutme,
     descriptionofservices,
-    wellnesskeywords,
     qualification,
     ip
   } = req.body;
@@ -36,7 +35,6 @@ exports.registerController = async (req, res) => {
     !website ||
     !aboutme ||
     !descriptionofservices ||
-    !wellnesskeywords ||
     !qualification ||
     !ip
   ) {
@@ -85,7 +83,6 @@ exports.registerController = async (req, res) => {
           website,
           aboutme,
           descriptionofservices,
-          wellnesskeywords,
           qualification,
           ip,
         })

@@ -6,6 +6,7 @@ require('dotenv').config();
 
 //import routes
 const memberRoutes = require("./routes/member");
+const db = require("./models");
 
 
 const app = express();
@@ -33,4 +34,11 @@ app.listen(PORT, (error) => {
       "Server is Successfully Running, and App is listening on port " + PORT
     );
   else console.log("Error occurred, server can't start", error);
+});
+
+// connecting to the DB 
+db.sequelize.sync({ alter: true }).then(function() {
+  console.log('connected to database ')
+}).catch(function(err) {
+  console.log(err)
 });
