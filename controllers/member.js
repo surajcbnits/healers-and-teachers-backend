@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const Member = db.member;
+const WellnessKeywords = db.wellnessKeywords;
+const WellnessMapping = db.wellnessMapping;
 
 exports.registerController = async (req, res) => {
   console.log("REQ : ", req.body);
@@ -20,6 +22,7 @@ exports.registerController = async (req, res) => {
     aboutme,
     descriptionofservices,
     qualification,
+    wellnesskeywords,
     ip
   } = req.body;
 
@@ -35,6 +38,7 @@ exports.registerController = async (req, res) => {
     !website ||
     !aboutme ||
     !descriptionofservices ||
+    !wellnesskeywords ||
     !qualification ||
     !ip
   ) {
@@ -70,6 +74,31 @@ exports.registerController = async (req, res) => {
         }
         console.log('username:>> ', username);
 
+        // all the wellness keyword ids that need the mapping with the new user
+        const wellnessKeywordIds = wellnesskeywords?.existing?.length ? wellnesskeywords?.existing : [];
+
+        // new wellness keyword
+        const newWellnessKeywords = wellnesskeywords?.new?.length ? wellnesskeywords?.new?.map(i=> i.toLowerCase()) : [];
+
+        // inserting the new wellness keyword
+        if (newWellnessKeywords?.length) {
+          newWellnessKeywords?.map(async(i)=>{
+            WellnessKeywords.create({
+              name: i
+            }).then((data=> {
+              console.log('data 86 :>> ', data);
+              console.log('id 86 :>> ', data.dataValues.id);
+
+              // putting the new wellness keyword id to the wellnessKeywordIds list
+              wellnessKeywordIds.push(data.dataValues.id);
+            })).catch((err) => {
+              console.log("err 88 : ", err);
+            })
+          })
+        }
+        
+
+        // creating the member
         Member.create({
           firstName,
           lastName,
@@ -86,10 +115,26 @@ exports.registerController = async (req, res) => {
           qualification,
           ip,
         })
-          .then((data) => {
+          .then(async(data) => {
             console.log("data : ", data);
+
+            if (wellnessKeywordIds.length) {
+              wellnessKeywordIds?.map(async(i)=>{
+                // doing the mapping between wellness keywords and the member
+                WellnessMapping.create({
+                  genarelid: data.dataValues.id,
+                  WellnessKeywordId: i,
+                  type: "member"
+                }).then((data=> {
+                  console.log('data 119 :>> ', data);
+                })).catch((err) => {
+                  console.log("err 122 : ", err);
+                })
+              })
+            }
+
             res.json({ message: `Member ${firstName} ${lastName}, created successfully` });
-            // res.send(data);
+            
           })
           .catch((err) => {
             console.log("err : ", err);
