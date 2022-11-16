@@ -6,6 +6,7 @@ require('dotenv').config();
 
 //import routes
 const memberRoutes = require("./routes/member");
+const memberEventsRoutes = require("./routes/memberEvents");
 const db = require("./models");
 
 
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //my routes
 app.use("/api", memberRoutes);
+app.use("/api", memberEventsRoutes);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

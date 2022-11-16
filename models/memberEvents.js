@@ -60,15 +60,15 @@ module.exports = (sequelize, DataTypes) => {
       },
       slidingscalemin: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       slidingscalemax: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       feepersession: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       recurring: {
         type: DataTypes.ENUM("y", "n"),
@@ -76,7 +76,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       recurringschedule: {
         type: DataTypes.STRING(100),
-        allowNull: false,
+        allowNull: true,
       },
     },
     {

@@ -47,117 +47,99 @@ exports.registerController = async (req, res) => {
     });
   }
 
-  // checking if the user already exist or not
-  const foundUser = await Member.findOne({ where: { email: email } });
-  if (foundUser)
-    return res.status(409).json({
-      error: "Email id already in use",
-    });
-
-  // generating password hash
-  bcrypt.hash(password, 10, async function (err, hash) {
-    if (err) {
-      console.log("err : ", err);
-      res.status(500).json({
-        message:
-          err.message || "Some error occurred while creating the Member.",
+  try {
+    // checking if the user already exist or not
+    const foundUser = await Member.findOne({ where: { email: email } });
+    if (foundUser)
+      return res.status(409).json({
+        error: "Email id already in use",
       });
-    } else {
-      let username = `${firstName}${lastName}`;
-      let user = await Member.findOne({ where: { username: username } });
-      let number = 0;
 
-      while (user) {
-        number++;
-        username = `${firstName}${lastName}${number}`;
-        user = await Member.findOne({ where: { username: username } });
-      }
+    // generating password hash
+    bcrypt.hash(password, 10, async function (err, hash) {
+      if (err) {
+        console.log("err : ", err);
+        res.status(500).json({
+          message:
+            err.message || "Some error occurred while creating the Member.",
+        });
+      } else {
+        let username = `${firstName}${lastName}`;
+        let user = await Member.findOne({ where: { username: username } });
+        let number = 0;
 
-      // all the wellness keyword ids that need the mapping with the new user
-      const wellnessKeywordIds = wellnesskeywords?.existing?.length
-        ? wellnesskeywords?.existing
-        : [];
+        while (user) {
+          number++;
+          username = `${firstName}${lastName}${number}`;
+          user = await Member.findOne({ where: { username: username } });
+        }
 
-      // new wellness keyword
-      const newWellnessKeywords = wellnesskeywords?.new?.length
-        ? wellnesskeywords?.new?.map((i) => i.toLowerCase())
-        : [];
+        // all the wellness keyword ids that need the mapping with the new user
+        const wellnessKeywordIds = wellnesskeywords?.existing?.length
+          ? wellnesskeywords?.existing
+          : [];
 
-      // inserting the new wellness keyword
-      if (newWellnessKeywords?.length) {
-        newWellnessKeywords?.map(async (i) => {
-          WellnessKeywords.create({
-            name: i,
-          })
-            .then((data) => {
+        // new wellness keyword
+        const newWellnessKeywords = wellnesskeywords?.new?.length
+          ? wellnesskeywords?.new?.map((i) => i.toLowerCase())
+          : [];
+
+        // inserting the new wellness keyword
+        if (newWellnessKeywords?.length) {
+          await Promise.all(
+            newWellnessKeywords?.map(async (i) => {
+              const data = await WellnessKeywords.create({
+                name: i,
+              });
               // putting the new wellness keyword id to the wellnessKeywordIds list
               wellnessKeywordIds.push(data.dataValues.id);
             })
-            .catch((err) => {
-              console.log(err);
-              res.status(500).json({
-                message:
-                  err.message ||
-                  "Some error occurred while creating the Member.",
-              });
-            });
+          );
+        }
+
+        // creating the member
+        const data = await Member.create({
+          firstName,
+          lastName,
+          password: hash,
+          username: username,
+          email,
+          city,
+          state,
+          country,
+          phoneno,
+          website,
+          aboutme,
+          descriptionofservices,
+          qualification,
+          ip,
         });
-      }
 
-      // creating the member
-      Member.create({
-        firstName,
-        lastName,
-        password: hash,
-        username: username,
-        email,
-        city,
-        state,
-        country,
-        phoneno,
-        website,
-        aboutme,
-        descriptionofservices,
-        qualification,
-        ip,
-      })
-        .then(async (data) => {
-          console.log("data : ", data);
+        console.log("data : ", data);
 
-          if (wellnessKeywordIds.length) {
+        if (wellnessKeywordIds.length) {
+          await Promise.all(
             wellnessKeywordIds?.map(async (i) => {
               // doing the mapping between wellness keywords and the member
-              WellnessMapping.create({
+              await WellnessMapping.create({
                 genarelid: data.dataValues.id,
                 WellnessKeywordId: i,
                 type: "member",
-              })
-                .then((data) => {
-                  console.log(data);
-                })
-                .catch((err) => {
-                  console.log(err);
-                  res.status(500).json({
-                    message:
-                      err.message ||
-                      "Some error occurred while creating the Member.",
-                  });
-                });
-            });
-          }
-          res.json({
-            message: `Member ${firstName} ${lastName}, created successfully`,
-          });
-        })
-        .catch((err) => {
-          console.log("err : ", err);
-          res.status(500).json({
-            message:
-              err.message || "Some error occurred while creating the Member.",
-          });
+              });
+            })
+          );
+        }
+        res.json({
+          message: `Member ${firstName} ${lastName}, created successfully`,
         });
-    }
-  });
+      }
+    });
+  } catch (err) {
+    console.log("err : ", err);
+    res.status(500).json({
+      message: err.message || "Some error occurred while creating the Member.",
+    });
+  }
 };
 
 exports.deleteMemberController = (req, res) => {
@@ -263,28 +245,26 @@ exports.updateMemberController = async (req, res) => {
       ? wellnesskeywords?.new?.map((i) => i.toLowerCase())
       : [];
 
-
-      console.log("newWellnessKeywords : ", newWellnessKeywords);
-      console.log("newWellnessKeywords length : ", newWellnessKeywords.length);
+    console.log("newWellnessKeywords : ", newWellnessKeywords);
+    console.log("newWellnessKeywords length : ", newWellnessKeywords.length);
 
     // inserting the new wellness keyword
     if (newWellnessKeywords?.length) {
       await Promise.all(
-      newWellnessKeywords?.map(async (i) => {
-       const data = await WellnessKeywords.create({
-          name: i,
-        })
-          
-            console.log("data 86 :>> ", data);
-            console.log("id 86 :>> ", data.dataValues.id);
+        newWellnessKeywords?.map(async (i) => {
+          const data = await WellnessKeywords.create({
+            name: i,
+          });
 
-            // putting the new wellness keyword id to the wellnessKeywordIds list
+          console.log("data 86 :>> ", data);
+          console.log("id 86 :>> ", data.dataValues.id);
+
+          // putting the new wellness keyword id to the wellnessKeywordIds list
 
           wellnessKeywordIds.push(data.dataValues.id);
-        }))
+        })
+      );
     }
-
-    
 
     const data = await WellnessMapping.findAll({
       where: {
@@ -330,27 +310,31 @@ exports.updateMemberController = async (req, res) => {
     console.log("WellnessKeywords that need to get deleted > ", needToDelete);
 
     if (needToAdd?.length) {
-      await Promise.all(needToAdd?.map(async (i) => {
-        // doing the mapping between wellness keywords and the member
-        await WellnessMapping.create({
-          genarelid: req.tokenDecodedData.id,
-          WellnessKeywordId: i,
-          type: "member",
-        })
-      }))
-    }
-
-    if (needToDelete?.length) {
-      await Promise.all(needToDelete?.map(async (i) => {
-        // deleting the records that are not needed anymore
-        await WellnessMapping.destroy({
-          where: {
+      await Promise.all(
+        needToAdd?.map(async (i) => {
+          // doing the mapping between wellness keywords and the member
+          await WellnessMapping.create({
             genarelid: req.tokenDecodedData.id,
             WellnessKeywordId: i,
             type: "member",
-          },
+          });
         })
-      }))
+      );
+    }
+
+    if (needToDelete?.length) {
+      await Promise.all(
+        needToDelete?.map(async (i) => {
+          // deleting the records that are not needed anymore
+          await WellnessMapping.destroy({
+            where: {
+              genarelid: req.tokenDecodedData.id,
+              WellnessKeywordId: i,
+              type: "member",
+            },
+          });
+        })
+      );
     }
 
     await Member.update(
