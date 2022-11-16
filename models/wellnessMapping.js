@@ -19,10 +19,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      wellnesskeywordsid: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
       type: {
         type: DataTypes.ENUM("member", "event", "service" ),
         allowNull: false,
