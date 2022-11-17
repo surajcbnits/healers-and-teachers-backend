@@ -65,13 +65,13 @@ exports.registerController = async (req, res) => {
         });
       } else {
         // Generate user name
-        let username = `${firstName}${lastName}`;
+        let username = `${firstName.toLowerCase()}${lastName.toLowerCase()}`;
         let user = await Member.findOne({ where: { username: username } });
         let number = 0;
 
         while (user) {
           number++;
-          username = `${firstName}${lastName}${number}`;
+          username = `${firstName.toLowerCase()}${lastName.toLowerCase()}${number}`;
           user = await Member.findOne({ where: { username: username } });
         }
 
