@@ -64,6 +64,7 @@ exports.registerController = async (req, res) => {
             err.message || "Some error occurred while creating the Member.",
         });
       } else {
+        // Generate user name
         let username = `${firstName}${lastName}`;
         let user = await Member.findOne({ where: { username: username } });
         let number = 0;
@@ -366,6 +367,80 @@ exports.updateMemberController = async (req, res) => {
     console.log("ERROR : ", error);
     res.status(500).json({
       error: "Something went wrong, while updating the user",
+    });
+  }
+};
+
+exports.getMemberDetailController = async (req, res) => {
+  const { username } = req.query;
+
+  if (!username) {
+    return res.status(400).json({
+      error: "Member's username is mandatory",
+    });
+  }
+
+  try {
+    const data = await Member.findOne({
+      attributes: [
+        "id",
+        "firstName",
+        "lastName",
+        "username",
+        "email",
+        "city",
+        "state",
+        "country",
+        "phoneno",
+        "website",
+        "aboutme",
+        "descriptionofservices",
+        "qualification",
+        "ip",
+      ],
+      where: { username: username },
+    });
+
+    const memberData = data.dataValues;
+
+    const wellnessMappingData = await WellnessMapping.findAll({
+      attributes: ["WellnessKeywordId"],
+      where: { genarelid: memberData.id, type: "member" },
+    });
+
+    const wellnessKeywordIds = wellnessMappingData.map(
+      (i) => i.dataValues.WellnessKeywordId
+    );
+
+    console.log("wellnessKeywordIds", wellnessKeywordIds);
+
+    const wellnessKeywordsData = [];
+
+    if (wellnessKeywordIds.length) {
+      await Promise.all(
+        wellnessKeywordIds.map(async (i) => {
+          const data = await WellnessKeywords.findOne({
+            attributes: ["name", "id"],
+            where: { id: i },
+          });
+
+          console.log("data 401 :>> ", data.dataValues);
+          wellnessKeywordsData.push(data.dataValues);
+        })
+      );
+    }
+
+    console.log("wellnessKeywordsData", wellnessKeywordsData);
+    memberData.wellnesskeywords = wellnessKeywordsData;
+
+    console.log("memberData :>> ", memberData);
+
+    res.status(200).json({ data: memberData });
+  } catch (error) {
+    console.log("error : ", error);
+    res.status(500).json({
+      message:
+        error.message || "Some error occurred while Fetching the Member.",
     });
   }
 };
