@@ -33,15 +33,15 @@ module.exports = (sequelize, DataTypes) => {
       },
       slidingscalemin: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       slidingscalemax: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       feepersession: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
     },
     {
