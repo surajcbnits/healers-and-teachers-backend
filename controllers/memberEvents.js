@@ -119,9 +119,18 @@ exports.updateMemberEventsController = async (req, res) => {
     recurringschedule,
   } = req.body;
 
-  const memberRecord = await MemberEvents.findOne({ where: { id: id } });
+  const eventRecord = await MemberEvents.findOne({
+    where: { id: id, eventstatus: "active" },
+  });
 
-  if (memberRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
+  // if event doesn't exist
+  if (!eventRecord) {
+    return res.status(400).json({
+      message: "Event doesn't exist",
+    });
+  }
+
+  if (eventRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
     return res.status(403).json({
       error: "user can only update their own event!",
     });
@@ -276,6 +285,7 @@ exports.getMemberEventsByUserController = async (req, res) => {
     const data = await MemberEvents.findAll({
       where: {
         MemberId: memberDetails.dataValues.id,
+        eventstatus: "active",
       },
     });
 
@@ -321,6 +331,49 @@ exports.getMemberEventsByUserController = async (req, res) => {
     res.status(500).json({
       message:
         error.message || "Some error occurred while Fetching the Events.",
+    });
+  }
+};
+
+exports.deleteMemberEventsController = async (req, res) => {
+  const { eventId } = req.query;
+
+  const eventRecord = await MemberEvents.findOne({
+    where: { id: eventId, eventstatus: "active" },
+  });
+
+  // if event doesn't exist
+  if (!eventRecord) {
+    return res.status(400).json({
+      message: "Event doesn't exist",
+    });
+  }
+
+  if (eventRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
+    return res.status(403).json({
+      error: "user can only delete their own event!",
+    });
+  }
+
+  try {
+    await MemberEvents.update(
+      {
+        eventstatus: "inactive",
+      },
+      {
+        where: {
+          id: eventId,
+        },
+      }
+    );
+
+    res.status(200).json({
+      message: "Event successfully deleted",
+    });
+  } catch (error) {
+    console.log("error : ", error);
+    res.status(500).json({
+      message: error.message || "Some error occurred while Deleting the Event.",
     });
   }
 };

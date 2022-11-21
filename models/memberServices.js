@@ -43,6 +43,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: true,
       },
+      servicestatus: {
+        type: DataTypes.ENUM("active", "inactive" ),
+        allowNull: false,
+        defaultValue: "active"
+      }
     },
     {
       sequelize,

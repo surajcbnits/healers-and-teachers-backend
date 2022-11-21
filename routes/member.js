@@ -11,7 +11,7 @@ var router = express.Router();
 
 router.post("/register", registerController);
 router.post("/login", loginController);
-router.delete("/deleteMember", deleteMemberController);
+router.delete("/deleteMember",isLogin, deleteMemberController);
 router.put("/updateMember", isLogin, updateMemberController);
 router.get("/getMemberDetail", getMemberDetailController);
 

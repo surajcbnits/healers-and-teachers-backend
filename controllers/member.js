@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const Member = db.member;
+const MemberEvents = db.memberEvents;
+const MemberServices = db.memberServices;
 const WellnessKeywords = db.wellnessKeywords;
 const WellnessMapping = db.wellnessMapping;
 
@@ -143,10 +145,61 @@ exports.registerController = async (req, res) => {
   }
 };
 
-exports.deleteMemberController = (req, res) => {
-  console.log("REQ : ", req.body);
+exports.deleteMemberController = async (req, res) => {
+  const { memberId } = req.query;
 
-  res.json({ message: "Welcome to H&T" });
+  const memberRecord = await Member.findOne({
+    where: { id: memberId, accountstatus: "active" },
+  });
+
+  // if member doesn't exist
+  if (!memberRecord) {
+    return res.status(400).json({
+      message: "Member doesn't exist",
+    });
+  }
+
+  if (memberRecord.dataValues.id !== req.tokenDecodedData.id) {
+    return res.status(403).json({
+      error: "user can only delete their own account!",
+    });
+  }
+
+  try {
+    // inactive all the events that the member has
+    await MemberEvents.update(
+      { eventstatus: "inactive" },
+      { where: { MemberId: memberRecord.dataValues.id, eventstatus: "active" } }
+    );
+
+    // inactive all the services that the member has
+    await MemberServices.update(
+      { servicestatus: "inactive" },
+      { where: { MemberId: memberRecord.dataValues.id, servicestatus: "active" } }
+    );
+
+// inactive the member
+    await Member.update(
+      {
+        accountstatus: "inactive",
+      },
+      {
+        where: {
+          id: memberId,
+        },
+      }
+    );
+
+    res.status(200).json({
+      message: "Member successfully deleted",
+    });
+  } catch (error) {
+    console.log("error : ", error);
+    res.status(500).json({
+      message:
+        error.message || "Some error occurred while Deleting the Member.",
+    });
+  }
 };
 
 exports.loginController = async (req, res) => {
@@ -162,7 +215,9 @@ exports.loginController = async (req, res) => {
   }
 
   // getting the user from DB using the email
-  const foundUser = await Member.findOne({ where: { email: email } });
+  const foundUser = await Member.findOne({
+    where: { email: email, accountstatus: "active" },
+  });
 
   // if user doesn't exist
   if (!foundUser) {
@@ -229,6 +284,18 @@ exports.updateMemberController = async (req, res) => {
     ip,
   } = req.body;
 
+  // getting the user from DB using the email
+  const foundUser = await Member.findOne({
+    where: { email: email, accountstatus: "active" },
+  });
+
+  // if user doesn't exist
+  if (!foundUser) {
+    return res.status(400).json({
+      message: "Member doesn't exist",
+    });
+  }
+
   if (req.tokenDecodedData.email != email) {
     return res.status(403).json({
       error: "user can only update their own data!",
@@ -245,9 +312,6 @@ exports.updateMemberController = async (req, res) => {
     const newWellnessKeywords = wellnesskeywords?.new?.length
       ? wellnesskeywords?.new?.map((i) => i.toLowerCase())
       : [];
-
-    console.log("newWellnessKeywords : ", newWellnessKeywords);
-    console.log("newWellnessKeywords length : ", newWellnessKeywords.length);
 
     // inserting the new wellness keyword
     if (newWellnessKeywords?.length) {
@@ -277,12 +341,6 @@ exports.updateMemberController = async (req, res) => {
     const existingIdsInTheMappingTable = data.map(
       (i) => i.dataValues.WellnessKeywordId
     );
-    console.log(
-      "existingIdsInTheMappingTable : ",
-      existingIdsInTheMappingTable
-    );
-    console.log("wellnessKeywordIds : ", wellnessKeywordIds);
-
     // sorting id's for mapping table which one to add and which one to remove
 
     // new WellnessKeywords that need to added in the mapping table
@@ -356,6 +414,7 @@ exports.updateMemberController = async (req, res) => {
       {
         where: {
           email: email,
+          accountstatus: "active",
         },
       }
     );
@@ -398,8 +457,15 @@ exports.getMemberDetailController = async (req, res) => {
         "qualification",
         "ip",
       ],
-      where: { username: username },
+      where: { username: username, accountstatus: "active" },
     });
+
+    // if user doesn't exist
+    if (!data) {
+      return res.status(400).json({
+        message: "Member doesn't exist",
+      });
+    }
 
     const memberData = data.dataValues;
 
@@ -411,8 +477,6 @@ exports.getMemberDetailController = async (req, res) => {
     const wellnessKeywordIds = wellnessMappingData.map(
       (i) => i.dataValues.WellnessKeywordId
     );
-
-    console.log("wellnessKeywordIds", wellnessKeywordIds);
 
     const wellnessKeywordsData = [];
 
@@ -430,10 +494,7 @@ exports.getMemberDetailController = async (req, res) => {
       );
     }
 
-    console.log("wellnessKeywordsData", wellnessKeywordsData);
     memberData.wellnesskeywords = wellnessKeywordsData;
-
-    console.log("memberData :>> ", memberData);
 
     res.status(200).json({ data: memberData });
   } catch (error) {

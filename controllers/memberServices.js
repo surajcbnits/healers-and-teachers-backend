@@ -104,9 +104,17 @@ exports.updateMemberServicesController = async (req, res) => {
     wellnesskeywords,
   } = req.body;
 
-  const memberRecord = await MemberServices.findOne({ where: { id: id } });
+  const serviceRecord = await MemberServices.findOne({ where: { id: id, servicestatus: "active" } });
 
-  if (memberRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
+
+    // if service doesn't exist
+    if (!serviceRecord) {
+      return res.status(400).json({
+        message: "Service doesn't exist",
+      });
+    }
+
+  if (serviceRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
     return res.status(403).json({
       error: "user can only update their own services!",
     });
@@ -253,9 +261,9 @@ exports.getMemberServicesByUserController = async (req, res) => {
     const data = await MemberServices.findAll({
       where: {
         MemberId: memberDetails.dataValues.id,
+        servicestatus: "active"
       },
     });
-
 
     const finalData = await Promise.all(
       data.map(async (i) => {
@@ -299,6 +307,50 @@ exports.getMemberServicesByUserController = async (req, res) => {
     res.status(500).json({
       message:
         error.message || "Some error occurred while Fetching the Services.",
+    });
+  }
+};
+
+
+exports.deleteMemberServicesController = async (req, res) => {
+  const { serviceId } = req.query;
+
+  const serviceRecord = await MemberServices.findOne({
+    where: { id: serviceId, servicestatus: "active" },
+  });
+
+  // if service doesn't exist
+  if (!serviceRecord) {
+    return res.status(400).json({
+      message: "Service doesn't exist",
+    });
+  }
+
+  if (serviceRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
+    return res.status(403).json({
+      error: "user can only delete their own service!",
+    });
+  }
+
+  try {
+    await MemberServices.update(
+      {
+        servicestatus: "inactive",
+      },
+      {
+        where: {
+          id: serviceId,
+        },
+      }
+    );
+
+    res.status(200).json({
+      message: "Service successfully deleted",
+    });
+  } catch (error) {
+    console.log("error : ", error);
+    res.status(500).json({
+      message: error.message || "Some error occurred while Deleting the Service.",
     });
   }
 };

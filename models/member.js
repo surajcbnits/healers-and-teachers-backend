@@ -69,6 +69,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(30),
         allowNull: true,
       },
+      accountstatus: {
+        type: DataTypes.ENUM("active", "inactive" ),
+        allowNull: false,
+        defaultValue: "active"
+      }
     },
     {
       sequelize,

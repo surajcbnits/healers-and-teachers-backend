@@ -74,6 +74,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(100),
         allowNull: true,
       },
+      eventstatus: {
+        type: DataTypes.ENUM("active", "inactive" ),
+        allowNull: false,
+        defaultValue: "active"
+      }
     },
     {
       sequelize,
