@@ -36,13 +36,9 @@ exports.registerController = async (req, res) => {
     !city ||
     !state ||
     !country ||
-    !phoneno ||
-    !website ||
     !aboutme ||
     !descriptionofservices ||
-    !wellnesskeywords ||
-    !qualification ||
-    !ip
+    !wellnesskeywords
   ) {
     return res.status(400).json({
       error: "Please include all fields",
@@ -257,6 +253,7 @@ exports.loginController = async (req, res) => {
             message: "Logged in successfully",
             token: token,
             email: foundUser.dataValues.email,
+            username: foundUser.dataValues.username,
           });
         }
       }
