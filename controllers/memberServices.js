@@ -5,7 +5,7 @@ const WellnessKeywords = db.wellnessKeywords;
 const WellnessMapping = db.wellnessMapping;
 
 exports.createMemberServicesController = async (req, res) => {
-  console.log("REQ : ", req.body);
+  console.log("REQ Body: ", req.body);
 
   // destructor the fields
   const {
@@ -19,7 +19,10 @@ exports.createMemberServicesController = async (req, res) => {
     wellnesskeywords,
   } = req.body;
 
+  console.log('req.file :>> ', req.file);
+
   try {
+
     // all the wellness keyword ids that need the mapping with the new service
     const wellnessKeywordIds = wellnesskeywords?.existing?.length
       ? wellnesskeywords?.existing
@@ -63,6 +66,7 @@ exports.createMemberServicesController = async (req, res) => {
       slidingscalemax,
       feepersession,
       MemberId: req.tokenDecodedData.id,
+      image: req.file.path,
     });
 
     if (wellnessKeywordIds.length) {
@@ -104,15 +108,16 @@ exports.updateMemberServicesController = async (req, res) => {
     wellnesskeywords,
   } = req.body;
 
-  const serviceRecord = await MemberServices.findOne({ where: { id: id, servicestatus: "active" } });
+  const serviceRecord = await MemberServices.findOne({
+    where: { id: id, servicestatus: "active" },
+  });
 
-
-    // if service doesn't exist
-    if (!serviceRecord) {
-      return res.status(400).json({
-        message: "Service doesn't exist",
-      });
-    }
+  // if service doesn't exist
+  if (!serviceRecord) {
+    return res.status(400).json({
+      message: "Service doesn't exist",
+    });
+  }
 
   if (serviceRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
     return res.status(403).json({
@@ -261,7 +266,7 @@ exports.getMemberServicesByUserController = async (req, res) => {
     const data = await MemberServices.findAll({
       where: {
         MemberId: memberDetails.dataValues.id,
-        servicestatus: "active"
+        servicestatus: "active",
       },
     });
 
@@ -311,7 +316,6 @@ exports.getMemberServicesByUserController = async (req, res) => {
   }
 };
 
-
 exports.deleteMemberServicesController = async (req, res) => {
   const { serviceId } = req.query;
 
@@ -350,7 +354,8 @@ exports.deleteMemberServicesController = async (req, res) => {
   } catch (error) {
     console.log("error : ", error);
     res.status(500).json({
-      message: error.message || "Some error occurred while Deleting the Service.",
+      message:
+        error.message || "Some error occurred while Deleting the Service.",
     });
   }
 };
