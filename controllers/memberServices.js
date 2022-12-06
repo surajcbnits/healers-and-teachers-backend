@@ -16,10 +16,12 @@ exports.createMemberServicesController = async (req, res) => {
     slidingscalemin,
     slidingscalemax,
     feepersession,
-    wellnesskeywords,
   } = req.body;
 
   console.log('req.file :>> ', req.file);
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords)
 
   try {
 
@@ -105,8 +107,10 @@ exports.updateMemberServicesController = async (req, res) => {
     slidingscalemin,
     slidingscalemax,
     feepersession,
-    wellnesskeywords,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
   const serviceRecord = await MemberServices.findOne({
     where: { id: id, servicestatus: "active" },
@@ -230,6 +234,7 @@ exports.updateMemberServicesController = async (req, res) => {
         slidingscalemin,
         slidingscalemax,
         feepersession,
+        image: req?.file?.path,
       },
       {
         where: {

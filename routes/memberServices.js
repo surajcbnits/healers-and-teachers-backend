@@ -5,7 +5,7 @@ const { isLogin, fileUpload } = require("../middleware");
 var router = express.Router();
 
 router.post("/createMemberServices", fileUpload.single("upload"), isLogin, createMemberServicesController);
-router.put("/updateMemberServices", isLogin, updateMemberServicesController);
+router.put("/updateMemberServices", fileUpload.single("upload"), isLogin, updateMemberServicesController);
 router.get("/getMemberServicesByUser", getMemberServicesByUserController);
 router.delete("/deleteMemberServices", isLogin, deleteMemberServicesController);
 
