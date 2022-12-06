@@ -23,6 +23,9 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// serving static files
+app.use('/uploads', express.static(__dirname + '/uploads'));
+
 //my routes
 app.use("/api", memberRoutes);
 app.use("/api", memberEventsRoutes);
