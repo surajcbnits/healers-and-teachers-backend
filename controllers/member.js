@@ -24,9 +24,11 @@ exports.registerController = async (req, res) => {
     aboutme,
     descriptionofservices,
     qualification,
-    wellnesskeywords,
     ip,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
   if (
     !firstName ||
@@ -112,6 +114,7 @@ exports.registerController = async (req, res) => {
           descriptionofservices,
           qualification,
           ip,
+          image: req?.file?.path,
         });
 
         console.log("data : ", data);
@@ -171,10 +174,15 @@ exports.deleteMemberController = async (req, res) => {
     // inactive all the services that the member has
     await MemberServices.update(
       { servicestatus: "inactive" },
-      { where: { MemberId: memberRecord.dataValues.id, servicestatus: "active" } }
+      {
+        where: {
+          MemberId: memberRecord.dataValues.id,
+          servicestatus: "active",
+        },
+      }
     );
 
-// inactive the member
+    // inactive the member
     await Member.update(
       {
         accountstatus: "inactive",
@@ -276,10 +284,12 @@ exports.updateMemberController = async (req, res) => {
     website,
     aboutme,
     descriptionofservices,
-    wellnesskeywords,
     qualification,
     ip,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
   // getting the user from DB using the email
   const foundUser = await Member.findOne({
@@ -407,6 +417,7 @@ exports.updateMemberController = async (req, res) => {
         descriptionofservices,
         qualification,
         ip,
+        image: req?.file?.path,
       },
       {
         where: {
@@ -452,6 +463,7 @@ exports.getMemberDetailController = async (req, res) => {
         "aboutme",
         "descriptionofservices",
         "qualification",
+        "image",
         "ip",
       ],
       where: { username: username, accountstatus: "active" },

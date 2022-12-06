@@ -18,13 +18,12 @@ exports.createMemberServicesController = async (req, res) => {
     feepersession,
   } = req.body;
 
-  console.log('req.file :>> ', req.file);
+  console.log("req.file :>> ", req.file);
 
   //this wellnesskeywords are coming as string we have to parse it
-  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords)
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
   try {
-
     // all the wellness keyword ids that need the mapping with the new service
     const wellnessKeywordIds = wellnesskeywords?.existing?.length
       ? wellnesskeywords?.existing
@@ -68,7 +67,7 @@ exports.createMemberServicesController = async (req, res) => {
       slidingscalemax,
       feepersession,
       MemberId: req.tokenDecodedData.id,
-      image: req.file.path,
+      image: req?.file?.path,
     });
 
     if (wellnessKeywordIds.length) {

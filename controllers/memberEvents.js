@@ -13,7 +13,6 @@ exports.createMemberEventsController = async (req, res) => {
     description,
     startdatetime,
     enddatetime,
-    wellnesskeywords,
     type,
     city,
     state,
@@ -26,6 +25,9 @@ exports.createMemberEventsController = async (req, res) => {
     recurring,
     recurringschedule,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
   try {
     // all the wellness keyword ids that need the mapping with the new event
@@ -71,6 +73,7 @@ exports.createMemberEventsController = async (req, res) => {
       recurring,
       recurringschedule,
       MemberId: req.tokenDecodedData.id,
+      image: req?.file?.path,
     });
 
     if (wellnessKeywordIds.length) {
@@ -105,7 +108,6 @@ exports.updateMemberEventsController = async (req, res) => {
     description,
     startdatetime,
     enddatetime,
-    wellnesskeywords,
     type,
     city,
     state,
@@ -118,6 +120,9 @@ exports.updateMemberEventsController = async (req, res) => {
     recurring,
     recurringschedule,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
   const eventRecord = await MemberEvents.findOne({
     where: { id: id, eventstatus: "active" },
@@ -249,6 +254,7 @@ exports.updateMemberEventsController = async (req, res) => {
         feepersession,
         recurring,
         recurringschedule,
+        image: req?.file?.path,
       },
       {
         where: {

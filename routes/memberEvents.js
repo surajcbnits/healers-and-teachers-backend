@@ -1,11 +1,11 @@
 var express = require("express");
 const { createMemberEventsController, updateMemberEventsController, getMemberEventsByUserController, deleteMemberEventsController } = require("../controllers/memberEvents");
 
-const { isLogin } = require("../middleware");
+const { isLogin, fileUpload } = require("../middleware");
 var router = express.Router();
 
-router.post("/createMemberEvents", isLogin, createMemberEventsController);
-router.put("/updateMemberEvents", isLogin, updateMemberEventsController);
+router.post("/createMemberEvents", fileUpload.single("upload"), isLogin, createMemberEventsController);
+router.put("/updateMemberEvents", fileUpload.single("upload"), isLogin, updateMemberEventsController);
 router.get("/getMemberEventsByUser", getMemberEventsByUserController);
 router.delete("/deleteMemberEvents", isLogin, deleteMemberEventsController);
 
