@@ -51,7 +51,7 @@ exports.createMemberEventsController = async (req, res) => {
       await Promise.all(
         newWellnessKeywords?.map(async (i) => {
           const data = await WellnessKeywords.create({
-            name: i,
+            name: String(i).toLowerCase(),
           });
           // putting the new wellness keyword id to the wellnessKeywordIds list
           wellnessKeywordIds.push(data.dataValues.id);
@@ -169,7 +169,7 @@ exports.updateMemberEventsController = async (req, res) => {
       await Promise.all(
         newWellnessKeywords?.map(async (i) => {
           const data = await WellnessKeywords.create({
-            name: i,
+            name: String(i).toLowerCase(),
           });
 
           // putting the new wellness keyword id to the wellnessKeywordIds list
