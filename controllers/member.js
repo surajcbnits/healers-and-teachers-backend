@@ -30,6 +30,12 @@ exports.registerController = async (req, res) => {
   //this wellnesskeywords are coming as string we have to parse it
   const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
+
   if (
     !firstName ||
     !lastName ||
@@ -290,6 +296,12 @@ exports.updateMemberController = async (req, res) => {
 
   //this wellnesskeywords are coming as string we have to parse it
   const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
   // getting the user from DB using the email
   const foundUser = await Member.findOne({

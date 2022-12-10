@@ -23,6 +23,12 @@ exports.createMemberServicesController = async (req, res) => {
   //this wellnesskeywords are coming as string we have to parse it
   const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
+
   try {
     // all the wellness keyword ids that need the mapping with the new service
     const wellnessKeywordIds = wellnesskeywords?.existing?.length
@@ -110,6 +116,12 @@ exports.updateMemberServicesController = async (req, res) => {
 
   //this wellnesskeywords are coming as string we have to parse it
   const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
   const serviceRecord = await MemberServices.findOne({
     where: { id: id, servicestatus: "active" },
