@@ -77,7 +77,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("active", "inactive" ),
         allowNull: false,
         defaultValue: "active"
-      }
+      },
+      virtualsessions: {
+        type: DataTypes.ENUM("y", "n"),
+        allowNull: false,
+      },
     },
     {
       sequelize,
