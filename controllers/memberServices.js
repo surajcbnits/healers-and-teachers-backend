@@ -5,7 +5,7 @@ const WellnessKeywords = db.wellnessKeywords;
 const WellnessMapping = db.wellnessMapping;
 
 exports.createMemberServicesController = async (req, res) => {
-  console.log("REQ : ", req.body);
+  console.log("REQ Body: ", req.body);
 
   // destructor the fields
   const {
@@ -16,8 +16,18 @@ exports.createMemberServicesController = async (req, res) => {
     slidingscalemin,
     slidingscalemax,
     feepersession,
-    wellnesskeywords,
   } = req.body;
+
+  console.log("req.file :>> ", req.file);
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
   try {
     // all the wellness keyword ids that need the mapping with the new service
@@ -32,23 +42,15 @@ exports.createMemberServicesController = async (req, res) => {
 
     // inserting the new wellness keyword
     if (newWellnessKeywords?.length) {
-      newWellnessKeywords?.map(async (i) => {
-        WellnessKeywords.create({
-          name: i,
-        })
-          .then((data) => {
-            // putting the new wellness keyword id to the wellnessKeywordIds list
-            wellnessKeywordIds.push(data.dataValues.id);
-          })
-          .catch((err) => {
-            console.log(err);
-            res.status(500).json({
-              message:
-                err.message ||
-                "Some error occurred while creating the Service.",
-            });
+      await Promise.all(
+        newWellnessKeywords?.map(async (i) => {
+          const data = await WellnessKeywords.create({
+            name: String(i).toLowerCase(),
           });
-      });
+          // putting the new wellness keyword id to the wellnessKeywordIds list
+          wellnessKeywordIds.push(data.dataValues.id);
+        })
+      );
     }
 
     // todo: need to add conditions about price (it's in the excel)
@@ -63,6 +65,7 @@ exports.createMemberServicesController = async (req, res) => {
       slidingscalemax,
       feepersession,
       MemberId: req.tokenDecodedData.id,
+      image: req?.file?.path,
     });
 
     if (wellnessKeywordIds.length) {
@@ -101,18 +104,27 @@ exports.updateMemberServicesController = async (req, res) => {
     slidingscalemin,
     slidingscalemax,
     feepersession,
-    wellnesskeywords,
   } = req.body;
 
-  const serviceRecord = await MemberServices.findOne({ where: { id: id, servicestatus: "active" } });
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
 
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
-    // if service doesn't exist
-    if (!serviceRecord) {
-      return res.status(400).json({
-        message: "Service doesn't exist",
-      });
-    }
+  const serviceRecord = await MemberServices.findOne({
+    where: { id: id, servicestatus: "active" },
+  });
+
+  // if service doesn't exist
+  if (!serviceRecord) {
+    return res.status(400).json({
+      message: "Service doesn't exist",
+    });
+  }
 
   if (serviceRecord.dataValues.MemberId !== req.tokenDecodedData.id) {
     return res.status(403).json({
@@ -136,7 +148,7 @@ exports.updateMemberServicesController = async (req, res) => {
       await Promise.all(
         newWellnessKeywords?.map(async (i) => {
           const data = await WellnessKeywords.create({
-            name: i,
+            name: String(i).toLowerCase(),
           });
 
           // putting the new wellness keyword id to the wellnessKeywordIds list
@@ -225,6 +237,7 @@ exports.updateMemberServicesController = async (req, res) => {
         slidingscalemin,
         slidingscalemax,
         feepersession,
+        image: req?.file?.path,
       },
       {
         where: {
@@ -261,7 +274,7 @@ exports.getMemberServicesByUserController = async (req, res) => {
     const data = await MemberServices.findAll({
       where: {
         MemberId: memberDetails.dataValues.id,
-        servicestatus: "active"
+        servicestatus: "active",
       },
     });
 
@@ -311,7 +324,6 @@ exports.getMemberServicesByUserController = async (req, res) => {
   }
 };
 
-
 exports.deleteMemberServicesController = async (req, res) => {
   const { serviceId } = req.query;
 
@@ -350,7 +362,8 @@ exports.deleteMemberServicesController = async (req, res) => {
   } catch (error) {
     console.log("error : ", error);
     res.status(500).json({
-      message: error.message || "Some error occurred while Deleting the Service.",
+      message:
+        error.message || "Some error occurred while Deleting the Service.",
     });
   }
 };

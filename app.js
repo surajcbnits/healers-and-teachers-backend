@@ -15,16 +15,16 @@ const db = require("./models");
 const app = express();
 
 const corsOptions = {
-  origin: "http://localhost:8080/",
+  origin: "*",
 };
 app.use(cors(corsOptions));
-
 // parse requests of content-type - application/json
-
 app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
-
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// serving static files
+app.use('/uploads', express.static(__dirname + '/uploads'));
 
 //my routes
 app.use("/api", memberRoutes);

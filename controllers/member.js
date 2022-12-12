@@ -24,9 +24,17 @@ exports.registerController = async (req, res) => {
     aboutme,
     descriptionofservices,
     qualification,
-    wellnesskeywords,
     ip,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
   if (
     !firstName ||
@@ -36,13 +44,9 @@ exports.registerController = async (req, res) => {
     !city ||
     !state ||
     !country ||
-    !phoneno ||
-    !website ||
     !aboutme ||
     !descriptionofservices ||
-    !wellnesskeywords ||
-    !qualification ||
-    !ip
+    !wellnesskeywords
   ) {
     return res.status(400).json({
       error: "Please include all fields",
@@ -92,7 +96,7 @@ exports.registerController = async (req, res) => {
           await Promise.all(
             newWellnessKeywords?.map(async (i) => {
               const data = await WellnessKeywords.create({
-                name: i,
+                name: String(i).toLowerCase(),
               });
               // putting the new wellness keyword id to the wellnessKeywordIds list
               wellnessKeywordIds.push(data.dataValues.id);
@@ -116,6 +120,7 @@ exports.registerController = async (req, res) => {
           descriptionofservices,
           qualification,
           ip,
+          image: req?.file?.path,
         });
 
         console.log("data : ", data);
@@ -175,10 +180,15 @@ exports.deleteMemberController = async (req, res) => {
     // inactive all the services that the member has
     await MemberServices.update(
       { servicestatus: "inactive" },
-      { where: { MemberId: memberRecord.dataValues.id, servicestatus: "active" } }
+      {
+        where: {
+          MemberId: memberRecord.dataValues.id,
+          servicestatus: "active",
+        },
+      }
     );
 
-// inactive the member
+    // inactive the member
     await Member.update(
       {
         accountstatus: "inactive",
@@ -257,6 +267,7 @@ exports.loginController = async (req, res) => {
             message: "Logged in successfully",
             token: token,
             email: foundUser.dataValues.email,
+            username: foundUser.dataValues.username,
           });
         }
       }
@@ -279,10 +290,18 @@ exports.updateMemberController = async (req, res) => {
     website,
     aboutme,
     descriptionofservices,
-    wellnesskeywords,
     qualification,
     ip,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
   // getting the user from DB using the email
   const foundUser = await Member.findOne({
@@ -318,7 +337,7 @@ exports.updateMemberController = async (req, res) => {
       await Promise.all(
         newWellnessKeywords?.map(async (i) => {
           const data = await WellnessKeywords.create({
-            name: i,
+            name: String(i).toLowerCase(),
           });
 
           console.log("data 86 :>> ", data);
@@ -410,6 +429,7 @@ exports.updateMemberController = async (req, res) => {
         descriptionofservices,
         qualification,
         ip,
+        image: req?.file?.path,
       },
       {
         where: {
@@ -455,6 +475,7 @@ exports.getMemberDetailController = async (req, res) => {
         "aboutme",
         "descriptionofservices",
         "qualification",
+        "image",
         "ip",
       ],
       where: { username: username, accountstatus: "active" },

@@ -13,7 +13,6 @@ exports.createMemberEventsController = async (req, res) => {
     description,
     startdatetime,
     enddatetime,
-    wellnesskeywords,
     type,
     city,
     state,
@@ -26,6 +25,15 @@ exports.createMemberEventsController = async (req, res) => {
     recurring,
     recurringschedule,
   } = req.body;
+
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
 
   try {
     // all the wellness keyword ids that need the mapping with the new event
@@ -43,7 +51,7 @@ exports.createMemberEventsController = async (req, res) => {
       await Promise.all(
         newWellnessKeywords?.map(async (i) => {
           const data = await WellnessKeywords.create({
-            name: i,
+            name: String(i).toLowerCase(),
           });
           // putting the new wellness keyword id to the wellnessKeywordIds list
           wellnessKeywordIds.push(data.dataValues.id);
@@ -71,6 +79,7 @@ exports.createMemberEventsController = async (req, res) => {
       recurring,
       recurringschedule,
       MemberId: req.tokenDecodedData.id,
+      image: req?.file?.path,
     });
 
     if (wellnessKeywordIds.length) {
@@ -105,7 +114,6 @@ exports.updateMemberEventsController = async (req, res) => {
     description,
     startdatetime,
     enddatetime,
-    wellnesskeywords,
     type,
     city,
     state,
@@ -119,6 +127,15 @@ exports.updateMemberEventsController = async (req, res) => {
     recurringschedule,
   } = req.body;
 
+  //this wellnesskeywords are coming as string we have to parse it
+  const wellnesskeywords = JSON.parse(req.body.wellnesskeywords);
+
+  if (wellnesskeywords?.existing?.length + wellnesskeywords?.new?.length > 5) {
+    return res.status(500).json({
+      message: "Maximum limit of wellnesskeywords is 5!",
+    });
+  }
+  
   const eventRecord = await MemberEvents.findOne({
     where: { id: id, eventstatus: "active" },
   });
@@ -152,7 +169,7 @@ exports.updateMemberEventsController = async (req, res) => {
       await Promise.all(
         newWellnessKeywords?.map(async (i) => {
           const data = await WellnessKeywords.create({
-            name: i,
+            name: String(i).toLowerCase(),
           });
 
           // putting the new wellness keyword id to the wellnessKeywordIds list
@@ -249,6 +266,7 @@ exports.updateMemberEventsController = async (req, res) => {
         feepersession,
         recurring,
         recurringschedule,
+        image: req?.file?.path,
       },
       {
         where: {

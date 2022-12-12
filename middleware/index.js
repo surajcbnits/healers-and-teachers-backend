@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
 
+const multer  = require('multer')
+const path = require('path')
+
 // checking if the user logged in or not
 exports.isLogin = (req, res, next) => {
   if (req.header("authorization")) {
@@ -22,3 +25,18 @@ exports.isLogin = (req, res, next) => {
   }
 
 };
+
+
+
+// const upload = multer({ dest: 'static/' })
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname))
+    }
+})
+  
+exports.fileUpload = multer({ storage: storage });

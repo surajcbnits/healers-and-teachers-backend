@@ -6,13 +6,13 @@ const {
   registerController,
   getMemberDetailController,
 } = require("../controllers/member");
-const { isLogin } = require("../middleware");
+const { isLogin, fileUpload } = require("../middleware");
 var router = express.Router();
 
-router.post("/register", registerController);
+router.post("/register", fileUpload.single("upload"),  registerController);
 router.post("/login", loginController);
 router.delete("/deleteMember",isLogin, deleteMemberController);
-router.put("/updateMember", isLogin, updateMemberController);
+router.put("/updateMember", fileUpload.single("upload"),  isLogin, updateMemberController);
 router.get("/getMemberDetail", getMemberDetailController);
 
 module.exports = router;
