@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(500),
         allowNull: false,
       },
-      descriptionofservices: {
+      title: {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
@@ -81,6 +81,22 @@ module.exports = (sequelize, DataTypes) => {
       virtualsessions: {
         type: DataTypes.ENUM("y", "n"),
         allowNull: false,
+      },
+      instagram: {
+        type:  DataTypes.STRING(100),
+        allowNull: true,
+      },
+      facebook: {
+        type:  DataTypes.STRING(100),
+        allowNull: true,
+      },
+      twitter: {
+        type:  DataTypes.STRING(100),
+        allowNull: true,
+      },
+      physicaladdress: {
+        type:  DataTypes.STRING(100),
+        allowNull: true,
       },
     },
     {
