@@ -25,6 +25,11 @@ exports.registerController = async (req, res) => {
     title,
     qualification,
     ip,
+    physicaladdress,
+    virtualsessions,
+    facebook,
+    instagram,
+    twitter,
   } = req.body;
 
   //this wellnesskeywords are coming as string we have to parse it
@@ -121,6 +126,11 @@ exports.registerController = async (req, res) => {
           qualification,
           ip,
           image: req?.file?.path,
+          physicaladdress,
+          virtualsessions,
+          facebook,
+          instagram,
+          twitter,
         });
 
         console.log("data : ", data);
@@ -292,6 +302,11 @@ exports.updateMemberController = async (req, res) => {
     title,
     qualification,
     ip,
+    physicaladdress,
+    virtualsessions,
+    facebook,
+    instagram,
+    twitter,
   } = req.body;
 
   //this wellnesskeywords are coming as string we have to parse it
@@ -430,6 +445,11 @@ exports.updateMemberController = async (req, res) => {
         qualification,
         ip,
         image: req?.file?.path,
+        physicaladdress,
+        virtualsessions,
+        facebook,
+        instagram,
+        twitter,
       },
       {
         where: {
@@ -479,6 +499,7 @@ exports.getMemberDetailController = async (req, res) => {
         "instagram",
         "twitter",
         "image",
+        "physicaladdress",
         "ip",
       ],
       where: { username: username, accountstatus: "active" },
