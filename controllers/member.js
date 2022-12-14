@@ -22,7 +22,7 @@ exports.registerController = async (req, res) => {
     phoneno,
     website,
     aboutme,
-    descriptionofservices,
+    title,
     qualification,
     ip,
   } = req.body;
@@ -45,7 +45,7 @@ exports.registerController = async (req, res) => {
     !state ||
     !country ||
     !aboutme ||
-    !descriptionofservices ||
+    !title ||
     !wellnesskeywords
   ) {
     return res.status(400).json({
@@ -117,7 +117,7 @@ exports.registerController = async (req, res) => {
           phoneno,
           website,
           aboutme,
-          descriptionofservices,
+          title,
           qualification,
           ip,
           image: req?.file?.path,
@@ -289,7 +289,7 @@ exports.updateMemberController = async (req, res) => {
     phoneno,
     website,
     aboutme,
-    descriptionofservices,
+    title,
     qualification,
     ip,
   } = req.body;
@@ -426,7 +426,7 @@ exports.updateMemberController = async (req, res) => {
         phoneno,
         website,
         aboutme,
-        descriptionofservices,
+        title,
         qualification,
         ip,
         image: req?.file?.path,
@@ -473,8 +473,11 @@ exports.getMemberDetailController = async (req, res) => {
         "phoneno",
         "website",
         "aboutme",
-        "descriptionofservices",
+        "title",
         "qualification",
+        "facebook",
+        "instagram",
+        "twitter",
         "image",
         "ip",
       ],
