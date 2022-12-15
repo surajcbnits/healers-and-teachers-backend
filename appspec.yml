@@ -23,7 +23,7 @@ os: linux
 #   may cause associated deployments to fail.
 files:
   - source: /
-    destination: /var/www/connectBud/   
+    destination: /var/www/healers-and-teachers-backend/   
 # For deployments to Amazon Linux and Ubuntu Server instances,
 #   you can specify a "permissions" 
 #   section here that describes special permissions to apply to the files 
