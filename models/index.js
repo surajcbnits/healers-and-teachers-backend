@@ -24,6 +24,7 @@ db.memberServices = require("./memberServices.js")(sequelize, Sequelize);
 db.memberEvents = require("./memberEvents.js")(sequelize, Sequelize);
 db.wellnessKeywords = require("./wellnessKeywords.js")(sequelize, Sequelize);
 db.wellnessMapping = require("./wellnessMapping.js")(sequelize, Sequelize);
+db.category = require("./category")(sequelize, Sequelize);
 
 
 // Relationships 
@@ -39,6 +40,11 @@ db.member.hasMany(db.memberServices);
 // wellnessKeywords to wellnessMapping
 db.wellnessMapping.belongsTo(db.wellnessKeywords);
 db.wellnessKeywords.hasMany(db.wellnessMapping);
+
+// wellnessKeywords to category
+db.wellnessKeywords.belongsTo(db.category);
+db.category.hasMany(db.wellnessKeywords);
+
 
 
 
