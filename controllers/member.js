@@ -501,6 +501,7 @@ exports.getMemberDetailController = async (req, res) => {
         "image",
         "physicaladdress",
         "ip",
+        "virtualsessions",
       ],
       where: { username: username, accountstatus: "active" },
     });
