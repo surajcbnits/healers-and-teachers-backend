@@ -400,7 +400,7 @@ exports.updateMemberController = async (req, res) => {
       }
     });
 
-    console.log("WellnessKeywords that need to get deleted > ", needToDelete);
+    console.log("WellnessKeywords that need to get deleted >", needToDelete);
 
     if (needToAdd?.length) {
       await Promise.all(
