@@ -189,7 +189,7 @@ exports.updateMemberEventsController = async (req, res) => {
       (i) => i.dataValues.WellnessKeywordId
     );
     console.log(
-      "existingIdsInTheMappingTable : ",
+      "existingIdsInTheMappingTable: ",
       existingIdsInTheMappingTable
     );
     console.log("wellnessKeywordIds : ", wellnessKeywordIds);
