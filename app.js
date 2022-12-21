@@ -9,6 +9,7 @@ const memberRoutes = require("./routes/member");
 const memberEventsRoutes = require("./routes/memberEvents");
 const memberServicesRoutes = require("./routes/memberServices");
 const wellnessKeywordsRoutes = require("./routes/wellnessKeywords");
+const categoryRoutes = require("./routes/category");
 const db = require("./models");
 
 
@@ -31,6 +32,7 @@ app.use("/api", memberRoutes);
 app.use("/api", memberEventsRoutes);
 app.use("/api", memberServicesRoutes);
 app.use("/api", wellnessKeywordsRoutes);
+app.use("/api", categoryRoutes);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

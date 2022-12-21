@@ -3,7 +3,9 @@ const WellnessKeywords = db.wellnessKeywords;
 
 exports.getAllWellnessKeywordsController = async (req, res) => {
   try {
-    const data = await WellnessKeywords.findAndCountAll();
+    const data = await WellnessKeywords.findAndCountAll({
+      order: [["name", "ASC"]],
+    });
 
     console.log("data 666", data);
 
@@ -14,7 +16,6 @@ exports.getAllWellnessKeywordsController = async (req, res) => {
     console.log("finalData", finalData);
 
     res.status(200).json({ data: finalData, count: data.count });
-
   } catch (error) {
     console.log("error : ", error);
     res.status(500).json({
