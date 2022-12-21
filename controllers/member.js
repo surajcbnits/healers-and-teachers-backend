@@ -72,7 +72,7 @@ exports.registerController = async (req, res) => {
         console.log("err : ", err);
         res.status(500).json({
           message:
-            err.message || "Some error occurred while creating the Member.",
+            err?.message || "Some error occurred while creating the Member.",
         });
       } else {
         // Generate user name
@@ -155,7 +155,7 @@ exports.registerController = async (req, res) => {
   } catch (err) {
     console.log("err : ", err);
     res.status(500).json({
-      message: err.message || "Some error occurred while creating the Member.",
+      message: err?.message || "Some error occurred while creating the Member.",
     });
   }
 };
@@ -548,6 +548,50 @@ exports.getMemberDetailController = async (req, res) => {
     res.status(500).json({
       message:
         error.message || "Some error occurred while Fetching the Member.",
+    });
+  }
+};
+
+exports.getAllMembersListController = async (req, res) => {
+
+  const { limit, offset } = req.query;
+
+  console.log('limit', limit)
+  console.log('offset', offset)
+
+  try {
+    const data = await Member.findAndCountAll({
+      attributes: [
+        "id",
+        "firstName",
+        "lastName",
+        "username",
+        "email",
+        "city",
+        "state",
+        "country",
+        "phoneno",
+        "website",
+        "aboutme",
+        "title",
+        "qualification",
+        "facebook",
+        "instagram",
+        "twitter",
+        "image",
+        "physicaladdress",
+        "ip",
+        "virtualsessions",
+      ],
+      offset: Number(offset),
+      limit: Number(limit),
+    });
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: err?.message || "Some error occurred while creating the Member.",
     });
   }
 };
