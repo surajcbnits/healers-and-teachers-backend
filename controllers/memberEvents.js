@@ -395,3 +395,62 @@ exports.deleteMemberEventsController = async (req, res) => {
     });
   }
 };
+
+exports.getAllMemberEventsController = async (req, res) => {
+  const { limit, offset } = req.query;
+  console.log('limit', limit)
+  console.log('offset', offset)
+  try {
+   
+    const data = await MemberEvents.findAndCountAll({
+      offset: Number(offset??0),
+      limit: Number(limit??10),
+    });
+    console.log('data', data)
+
+    const finalData = await Promise.all(
+      data.rows.map(async (i) => {
+        const eventsData = i.dataValues;
+
+        const wellnessKeywordsData = [];
+
+        const wellnessMappingData = await WellnessMapping.findAll({
+          attributes: ["WellnessKeywordId"],
+          where: { genarelid: eventsData.id, type: "event" },
+        });
+
+        const wellnessKeywordIds = wellnessMappingData.map(
+          (i) => i.dataValues.WellnessKeywordId
+        );
+
+        if (wellnessKeywordIds.length) {
+          await Promise.all(
+            wellnessKeywordIds.map(async (i) => {
+              const data = await WellnessKeywords.findOne({
+                attributes: ["name", "id"],
+                where: { id: i },
+              });
+
+              wellnessKeywordsData.push(data.dataValues);
+            })
+          );
+        }
+
+        eventsData.wellnessKeywords = wellnessKeywordsData;
+
+        return eventsData;
+      })
+    );
+
+    console.log("finalData", finalData);
+
+    res.status(200).json({count:data.count,currentCount:finalData.length, data: finalData });
+    // res.status(200).json(data);
+  } catch (error) {
+    console.log("error : ", error);
+    res.status(500).json({
+      message:
+        error.message || "Some error occurred while Fetching all Events.",
+    });
+  }
+};
