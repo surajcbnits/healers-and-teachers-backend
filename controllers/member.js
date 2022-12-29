@@ -587,11 +587,45 @@ exports.getAllMembersListController = async (req, res) => {
       limit: Number(limit),
     });
 
-    res.status(200).json(data);
+    const finalData = await Promise.all(
+      data.rows.map(async (i) => {
+        const eventsData = i.dataValues;
+
+        const wellnessKeywordsData = [];
+
+        const wellnessMappingData = await WellnessMapping.findAll({
+          attributes: ["WellnessKeywordId"],
+          where: { genarelid: eventsData.id, type: "member" },
+        });
+
+        const wellnessKeywordIds = wellnessMappingData.map(
+          (i) => i.dataValues.WellnessKeywordId
+        );
+
+        if (wellnessKeywordIds.length) {
+          await Promise.all(
+            wellnessKeywordIds.map(async (i) => {
+              const data = await WellnessKeywords.findOne({
+                attributes: ["name", "id"],
+                where: { id: i },
+              });
+
+              wellnessKeywordsData.push(data.dataValues);
+            })
+          );
+        }
+
+        eventsData.wellnessKeywords = wellnessKeywordsData;
+
+        return eventsData;
+      })
+    );
+
+    res.status(200).json({ count: data.count,rows:finalData,});
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: err?.message || "Some error occurred while creating the Member.",
+      message: err?.message || "Some error occurred while getting all the Member.",
     });
   }
 };
