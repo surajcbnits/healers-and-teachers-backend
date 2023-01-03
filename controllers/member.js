@@ -540,7 +540,7 @@ exports.getMemberDetailController = async (req, res) => {
       );
     }
 
-    memberData.wellnesskeywords = wellnessKeywordsData;
+    memberData.wellnessKeywords = wellnessKeywordsData;
 
     res.status(200).json({ data: memberData });
   } catch (error) {
