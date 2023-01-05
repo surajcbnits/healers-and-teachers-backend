@@ -585,7 +585,7 @@ exports.getAllMembersListController = async (req, res) => {
       ],
       offset: Number(offset),
       limit: Number(limit),
-      order: [["id", sort === "ASC" ? "ASC" : "DESC"]]
+      order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]]
     });
 
     const finalData = await Promise.all(

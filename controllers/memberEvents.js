@@ -409,7 +409,7 @@ exports.getAllMemberEventsController = async (req, res) => {
     const data = await MemberEvents.findAndCountAll({
       offset: Number(offset??0),
       limit: Number(limit??10),
-      order: [["id", sort === "ASC" ? "ASC" : "DESC"]]
+      order: [["name", sort === "ASC" ? "ASC" : "DESC"]]
     });
     console.log('data', data)
 
