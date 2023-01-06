@@ -540,7 +540,7 @@ exports.getMemberDetailController = async (req, res) => {
       );
     }
 
-    memberData.wellnesskeywords = wellnessKeywordsData;
+    memberData.wellnessKeywords = wellnessKeywordsData;
 
     res.status(200).json({ data: memberData });
   } catch (error) {
@@ -554,7 +554,7 @@ exports.getMemberDetailController = async (req, res) => {
 
 exports.getAllMembersListController = async (req, res) => {
 
-  const { limit, offset } = req.query;
+  const { limit, offset, sort } = req.query;
 
   console.log('limit', limit)
   console.log('offset', offset)
@@ -585,6 +585,7 @@ exports.getAllMembersListController = async (req, res) => {
       ],
       offset: Number(offset),
       limit: Number(limit),
+      order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]]
     });
 
     const finalData = await Promise.all(

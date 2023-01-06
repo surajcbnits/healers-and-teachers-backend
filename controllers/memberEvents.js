@@ -336,6 +336,10 @@ exports.getMemberEventsByUserController = async (req, res) => {
         }
 
         eventsData.wellnessKeywords = wellnessKeywordsData;
+        eventsData.memberUserName = memberDetails?.dataValues?.username;
+        eventsData.memberImage = memberDetails?.dataValues?.image;
+        eventsData.memberFirstName = memberDetails?.dataValues?.firstName;
+        eventsData.memberLastName = memberDetails?.dataValues?.lastName;
 
         return eventsData;
       })
@@ -397,7 +401,7 @@ exports.deleteMemberEventsController = async (req, res) => {
 };
 
 exports.getAllMemberEventsController = async (req, res) => {
-  const { limit, offset } = req.query;
+  const { limit, offset, sort } = req.query;
   console.log('limit', limit)
   console.log('offset', offset)
   try {
@@ -405,8 +409,9 @@ exports.getAllMemberEventsController = async (req, res) => {
     const data = await MemberEvents.findAndCountAll({
       offset: Number(offset??0),
       limit: Number(limit??10),
+      order: [["name", sort === "ASC" ? "ASC" : "DESC"]]
     });
-    console.log('data', data)
+    console.log('data 123', data)
 
     const finalData = await Promise.all(
       data.rows.map(async (i) => {
@@ -435,6 +440,15 @@ exports.getAllMemberEventsController = async (req, res) => {
             })
           );
         }
+
+        const memberDetails = await Member.findOne({
+          where: { id: eventsData.MemberId },
+        });
+
+        eventsData.memberUserName = memberDetails?.dataValues?.username;
+        eventsData.memberImage = memberDetails?.dataValues?.image;
+        eventsData.memberFirstName = memberDetails?.dataValues?.firstName;
+        eventsData.memberLastName = memberDetails?.dataValues?.lastName;
 
         eventsData.wellnessKeywords = wellnessKeywordsData;
 
