@@ -112,6 +112,8 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
         .filter((i) => i)
         .filter(onlyUnique);
 
+        console.log('memberIds :>', memberIds)
+
       //  fetching member details from member id array
       const memberDetails = memberIds?.length
         ? await Promise.all(
@@ -146,6 +148,8 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
           )
         : [];
 
+        console.log('memberDetails :> ', memberDetails)
+
       // getting all the events that is being mapped to the current wellnesskeywords
       const wellnessMappingDataForEvents = await Promise.all(
         wellnesskeywords.map(async (i) => {
@@ -169,14 +173,23 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
               const data = await MemberEvents.findOne({
                 where: { id: i, eventstatus: "active" },
               });
+
+              const memberDetails = await Member.findOne({
+                where: { id: data.dataValues.MemberId },
+              });
+      
+              data.dataValues.memberUserName = memberDetails?.dataValues?.username;
+              data.dataValues.memberImage = memberDetails?.dataValues?.image;
+              data.dataValues.memberFirstName = memberDetails?.dataValues?.firstName;
+              data.dataValues.memberLastName = memberDetails?.dataValues?.lastName;
               return data;
             })
           )
         : [];
 
-      data.dataValues.wellnesskeywords = wellnesskeywords;
-      data.dataValues.memberDetails = memberDetails;
-      data.dataValues.eventDetails = eventDetails;
+      data.dataValues.wellnesskeywords = wellnesskeywords.filter((i) => i);
+      data.dataValues.memberDetails = memberDetails.filter((i) => i);
+      data.dataValues.eventDetails = eventDetails.filter((i) => i);
     }
 
     console.log("data : ", data);
