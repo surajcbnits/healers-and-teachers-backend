@@ -187,7 +187,7 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
           )
         : [];
 
-      data.dataValues.wellnesskeywords = wellnesskeywords.filter((i) => i);
+      data.dataValues.wellnessKeywords = wellnesskeywords.filter((i) => i);
       data.dataValues.memberDetails = memberDetails.filter((i) => i);
       data.dataValues.eventDetails = eventDetails.filter((i) => i);
     }
