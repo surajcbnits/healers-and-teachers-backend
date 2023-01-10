@@ -38,6 +38,54 @@ exports.createCategoryController = async (req, res) => {
   }
 };
 
+exports.updateCategoryByIdController = async (req, res) => {
+  // destructor the query param
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Please send id in query param!",
+    });
+  }
+
+  // destructor the fields
+  const { name, description } = req.body;
+
+  // // check if the fields are empty
+  // if (!name || !description) {
+  //   return res.status(400).json({
+  //     message: "Please fill name,description the fields",
+  //   });
+  // }
+
+  try {
+    // creating the Category
+    const data = await Category.update(
+      {
+        name,
+        image: req?.file?.path,
+        description,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    );
+
+    console.log("CategoryKeywords updated data : ", data);
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.log("error : ", error);
+    res.status(500).json({
+      message:
+        error.message ||
+        "Some error occurred while updating the category.",
+    });
+  }
+};
+
 exports.getAllCategoryController = async (req, res) => {
   try {
     const data = await Category.findAll({
@@ -112,7 +160,7 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
         .filter((i) => i)
         .filter(onlyUnique);
 
-        console.log('memberIds :>', memberIds)
+      console.log("memberIds :>", memberIds);
 
       //  fetching member details from member id array
       const memberDetails = memberIds?.length
@@ -148,7 +196,7 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
           )
         : [];
 
-        console.log('memberDetails :> ', memberDetails)
+      console.log("memberDetails :> ", memberDetails);
 
       // getting all the events that is being mapped to the current wellnesskeywords
       const wellnessMappingDataForEvents = await Promise.all(
@@ -177,11 +225,14 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
               const memberDetails = await Member.findOne({
                 where: { id: data.dataValues.MemberId },
               });
-      
-              data.dataValues.memberUserName = memberDetails?.dataValues?.username;
+
+              data.dataValues.memberUserName =
+                memberDetails?.dataValues?.username;
               data.dataValues.memberImage = memberDetails?.dataValues?.image;
-              data.dataValues.memberFirstName = memberDetails?.dataValues?.firstName;
-              data.dataValues.memberLastName = memberDetails?.dataValues?.lastName;
+              data.dataValues.memberFirstName =
+                memberDetails?.dataValues?.firstName;
+              data.dataValues.memberLastName =
+                memberDetails?.dataValues?.lastName;
               return data;
             })
           )
