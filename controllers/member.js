@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { onlyUnique } = require("../utils");
 const db = require("../models");
 const Member = db.member;
 const MemberEvents = db.memberEvents;
@@ -553,50 +554,101 @@ exports.getMemberDetailController = async (req, res) => {
 };
 
 exports.getAllMembersListController = async (req, res) => {
+  const { limit, offset, sort, wellnessKeywordIds } = req.query;
 
-  const { limit, offset, sort } = req.query;
-
-  console.log('limit', limit)
-  console.log('offset', offset)
+  console.log("limit", limit);
+  console.log("offset", offset);
+  console.log("wellnessKeywordIds", wellnessKeywordIds);
 
   try {
-    const data = await Member.findAndCountAll({
-      attributes: [
-        "id",
-        "firstName",
-        "lastName",
-        "username",
-        "email",
-        "city",
-        "state",
-        "country",
-        "phoneno",
-        "website",
-        "aboutme",
-        "title",
-        "qualification",
-        "facebook",
-        "instagram",
-        "twitter",
-        "image",
-        "physicaladdress",
-        "ip",
-        "virtualsessions",
-      ],
-      offset: Number(offset),
-      limit: Number(limit),
-      order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]]
-    });
+    const memberIds = wellnessKeywordIds?.length
+      ? (
+          await WellnessMapping.findAll({
+            attributes: ["genarelid"],
+            where: {
+              WellnessKeywordId: JSON.parse(wellnessKeywordIds),
+              type: "member",
+            },
+          })
+        )
+          .map((i) => i.dataValues.genarelid)
+          .filter(onlyUnique)
+      : [];
+
+    console.log("memberIds :>> ", memberIds);
+
+    const data = memberIds.length
+      ? await Member.findAndCountAll({
+          attributes: [
+            "id",
+            "firstName",
+            "lastName",
+            "username",
+            "email",
+            "city",
+            "state",
+            "country",
+            "phoneno",
+            "website",
+            "aboutme",
+            "title",
+            "qualification",
+            "facebook",
+            "instagram",
+            "twitter",
+            "image",
+            "physicaladdress",
+            "ip",
+            "virtualsessions",
+          ],
+          where: {
+            id: memberIds,
+            accountstatus: "active",
+          },
+          offset: Number(offset),
+          limit: Number(limit),
+          order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]],
+        })
+      : await Member.findAndCountAll({
+          attributes: [
+            "id",
+            "firstName",
+            "lastName",
+            "username",
+            "email",
+            "city",
+            "state",
+            "country",
+            "phoneno",
+            "website",
+            "aboutme",
+            "title",
+            "qualification",
+            "facebook",
+            "instagram",
+            "twitter",
+            "image",
+            "physicaladdress",
+            "ip",
+            "virtualsessions",
+          ],
+          where: {
+            accountstatus: "active",
+          },
+          offset: Number(offset),
+          limit: Number(limit),
+          order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]],
+        });
 
     const finalData = await Promise.all(
       data.rows.map(async (i) => {
-        const eventsData = i.dataValues;
+        const memberData = i.dataValues;
 
         const wellnessKeywordsData = [];
 
         const wellnessMappingData = await WellnessMapping.findAll({
           attributes: ["WellnessKeywordId"],
-          where: { genarelid: eventsData.id, type: "member" },
+          where: { genarelid: memberData.id, type: "member" },
         });
 
         const wellnessKeywordIds = wellnessMappingData.map(
@@ -616,17 +668,18 @@ exports.getAllMembersListController = async (req, res) => {
           );
         }
 
-        eventsData.wellnessKeywords = wellnessKeywordsData;
+        memberData.wellnessKeywords = wellnessKeywordsData;
 
-        return eventsData;
+        return memberData;
       })
     );
 
-    res.status(200).json({ count: data.count,rows:finalData,});
+    res.status(200).json({ count: data.count, rows: finalData });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: err?.message || "Some error occurred while getting all the Member.",
+      message:
+        err?.message || "Some error occurred while getting all the Member.",
     });
   }
 };
