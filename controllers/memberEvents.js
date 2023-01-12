@@ -438,7 +438,7 @@ exports.getAllMemberEventsController = async (req, res) => {
     console.log("data 123", data);
 
     const finalData = await Promise.all(
-      data.rows.map(async (i) => {
+      data?.rows?.map(async (i) => {
         const eventsData = i.dataValues;
 
         const wellnessKeywordsData = [];
@@ -484,8 +484,10 @@ exports.getAllMemberEventsController = async (req, res) => {
 
     res.status(200).json({
       count: data.count,
-      currentCount: finalData.length,
       data: finalData,
+      wellnessKeywordIds: wellnessKeywordIds
+        ? JSON.parse(wellnessKeywordIds)
+        : [],
     });
     // res.status(200).json(data);
   } catch (error) {
