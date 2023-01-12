@@ -337,6 +337,7 @@ exports.getMemberEventsByUserController = async (req, res) => {
         eventsData.memberImage = memberDetails?.dataValues?.image;
         eventsData.memberFirstName = memberDetails?.dataValues?.firstName;
         eventsData.memberLastName = memberDetails?.dataValues?.lastName;
+        eventsData.memberTitle = memberDetails?.dataValues?.title;
 
         return eventsData;
       })
