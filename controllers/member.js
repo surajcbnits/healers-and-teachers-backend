@@ -605,9 +605,9 @@ exports.getAllMembersListController = async (req, res) => {
             id: memberIds,
             accountstatus: "active",
           },
-          offset: Number(offset),
-          limit: Number(limit),
-          order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]],
+          offset: Number(offset ?? 0),
+          limit: Number(limit ?? 10),
+          order: [["firstName", sort === "DESC" ? "DESC" : "ASC"]],
         })
       : await Member.findAndCountAll({
           attributes: [
@@ -635,8 +635,8 @@ exports.getAllMembersListController = async (req, res) => {
           where: {
             accountstatus: "active",
           },
-          offset: Number(offset),
-          limit: Number(limit),
+          offset: Number(offset ?? 0),
+          limit: Number(limit ?? 10),
           order: [["firstName", sort === "DESC" ? "DESC" : "ASC"]],
         });
 
