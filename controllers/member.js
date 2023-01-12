@@ -674,7 +674,7 @@ exports.getAllMembersListController = async (req, res) => {
       })
     );
 
-    res.status(200).json({ count: data.count, rows: finalData, wellnessKeywordIds: JSON.parse(wellnessKeywordIds)?.length ? JSON.parse(wellnessKeywordIds) : [] });
+    res.status(200).json({ count: data.count, rows: finalData, wellnessKeywordIds: wellnessKeywordIds ? JSON.parse(wellnessKeywordIds) : [] });
   } catch (error) {
     console.log(error);
     res.status(500).json({
