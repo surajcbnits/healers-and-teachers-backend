@@ -428,12 +428,12 @@ exports.getAllMemberEventsController = async (req, res) => {
             id: eventIds,
             eventstatus: "active",
           },
-          order: [["firstName", sort === "DESC" ? "DESC" : "ASC"]],
+          order: [["name", sort === "DESC" ? "DESC" : "ASC"]],
         })
       : await MemberEvents.findAndCountAll({
           offset: Number(offset ?? 0),
           limit: Number(limit ?? 10),
-          order: [["firstName", sort === "DESC" ? "DESC" : "ASC"]],
+          order: [["name", sort === "DESC" ? "DESC" : "ASC"]],
         });
     console.log("data 123", data);
 
