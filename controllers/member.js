@@ -637,7 +637,7 @@ exports.getAllMembersListController = async (req, res) => {
           },
           offset: Number(offset),
           limit: Number(limit),
-          order: [["firstName", sort === "ASC" ? "ASC" : "DESC"]],
+          order: [["firstName", sort === "DESC" ? "DESC" : "ASC"]],
         });
 
     const finalData = await Promise.all(
@@ -674,7 +674,7 @@ exports.getAllMembersListController = async (req, res) => {
       })
     );
 
-    res.status(200).json({ count: data.count, rows: finalData });
+    res.status(200).json({ count: data.count, rows: finalData, wellnessKeywordIds: JSON.parse(wellnessKeywordIds)?.length ? JSON.parse(wellnessKeywordIds) : [] });
   } catch (error) {
     console.log(error);
     res.status(500).json({
