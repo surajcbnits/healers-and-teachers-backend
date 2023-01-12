@@ -135,7 +135,7 @@ exports.updateMemberEventsController = async (req, res) => {
       message: "Maximum limit of wellnesskeywords is 5!",
     });
   }
-  
+
   const eventRecord = await MemberEvents.findOne({
     where: { id: id, eventstatus: "active" },
   });
@@ -188,10 +188,7 @@ exports.updateMemberEventsController = async (req, res) => {
     const existingIdsInTheMappingTable = data.map(
       (i) => i.dataValues.WellnessKeywordId
     );
-    console.log(
-      "existingIdsInTheMappingTable: ",
-      existingIdsInTheMappingTable
-    );
+    console.log("existingIdsInTheMappingTable: ", existingIdsInTheMappingTable);
     console.log("wellnessKeywordIds : ", wellnessKeywordIds);
 
     // sorting id's for mapping table which one to add and which one to remove
@@ -401,20 +398,47 @@ exports.deleteMemberEventsController = async (req, res) => {
 };
 
 exports.getAllMemberEventsController = async (req, res) => {
-  const { limit, offset, sort } = req.query;
-  console.log('limit', limit)
-  console.log('offset', offset)
+  const { limit, offset, sort, wellnessKeywordIds } = req.query;
+
+  console.log("limit", limit);
+  console.log("offset", offset);
+  console.log("wellnessKeywordIds", wellnessKeywordIds);
   try {
-   
-    const data = await MemberEvents.findAndCountAll({
-      offset: Number(offset??0),
-      limit: Number(limit??10),
-      order: [["name", sort === "ASC" ? "ASC" : "DESC"]]
-    });
-    console.log('data 123', data)
+    const eventIds = wellnessKeywordIds?.length
+      ? (
+          await WellnessMapping.findAll({
+            attributes: ["genarelid"],
+            where: {
+              WellnessKeywordId: JSON.parse(wellnessKeywordIds),
+              type: "event",
+            },
+          })
+        )
+          .map((i) => i.dataValues.genarelid)
+          .filter(onlyUnique)
+      : [];
+
+    console.log("eventIds :>> ", eventIds);
+
+    const data = eventIds?.length
+      ? await MemberEvents.findAndCountAll({
+          offset: Number(offset ?? 0),
+          limit: Number(limit ?? 10),
+          where: {
+            id: eventIds,
+            eventstatus: "active",
+          },
+          order: [["name", sort === "DESC" ? "DESC" : "ASC"]],
+        })
+      : await MemberEvents.findAndCountAll({
+          offset: Number(offset ?? 0),
+          limit: Number(limit ?? 10),
+          order: [["name", sort === "DESC" ? "DESC" : "ASC"]],
+        });
+    console.log("data 123", data);
 
     const finalData = await Promise.all(
-      data.rows.map(async (i) => {
+      data?.rows?.map(async (i) => {
         const eventsData = i.dataValues;
 
         const wellnessKeywordsData = [];
@@ -449,6 +473,7 @@ exports.getAllMemberEventsController = async (req, res) => {
         eventsData.memberImage = memberDetails?.dataValues?.image;
         eventsData.memberFirstName = memberDetails?.dataValues?.firstName;
         eventsData.memberLastName = memberDetails?.dataValues?.lastName;
+        eventsData.memberTitle = memberDetails?.dataValues?.title;
 
         eventsData.wellnessKeywords = wellnessKeywordsData;
 
@@ -458,7 +483,13 @@ exports.getAllMemberEventsController = async (req, res) => {
 
     console.log("finalData", finalData);
 
-    res.status(200).json({count:data.count,currentCount:finalData.length, data: finalData });
+    res.status(200).json({
+      count: data.count,
+      data: finalData,
+      wellnessKeywordIds: wellnessKeywordIds
+        ? JSON.parse(wellnessKeywordIds)
+        : [],
+    });
     // res.status(200).json(data);
   } catch (error) {
     console.log("error : ", error);
