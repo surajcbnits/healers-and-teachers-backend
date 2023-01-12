@@ -80,8 +80,7 @@ exports.updateCategoryByIdController = async (req, res) => {
     console.log("error : ", error);
     res.status(500).json({
       message:
-        error.message ||
-        "Some error occurred while updating the category.",
+        error.message || "Some error occurred while updating the category.",
     });
   }
 };
@@ -154,18 +153,27 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
           return id;
         })
       );
-      // clearing the data and getting the memberId array
-      const memberIds = wellnessMappingDataForMember
-        .map((i) => i[0]?.dataValues?.genarelid)
-        .filter((i) => i)
-        .filter(onlyUnique);
 
+      console.log(
+        "wellnessMappingDataForMember :>> ",
+        wellnessMappingDataForMember
+      );
+      // clearing the data and getting the memberId array
+      const memberIds = [];
+
+      wellnessMappingDataForMember.map((i) =>
+        i?.map((j) => memberIds.push(j?.dataValues?.genarelid))
+      );
       console.log("memberIds :>", memberIds);
 
+      const finalMemberIds = memberIds?.filter((i) => i).filter(onlyUnique);
+
+      console.log("finalMemberIds :>", finalMemberIds);
+
       //  fetching member details from member id array
-      const memberDetails = memberIds?.length
+      const memberDetails = finalMemberIds?.length
         ? await Promise.all(
-            memberIds?.map(async (i) => {
+            finalMemberIds?.map(async (i) => {
               const data = await Member.findOne({
                 attributes: [
                   "id",
@@ -200,39 +208,40 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
 
       // getting wellnessKeywords for members
       const finalMemberDetails = await Promise.all(
-        memberDetails.filter((i) => i).map(async (i) => {
-          const memberData = i.dataValues;
-  
-          const wellnessKeywordsData = [];
-  
-          const wellnessMappingData = await WellnessMapping.findAll({
-            attributes: ["WellnessKeywordId"],
-            where: { genarelid: memberData.id, type: "member" },
-          });
-  
-          const wellnessKeywordIds = wellnessMappingData.map(
-            (i) => i.dataValues.WellnessKeywordId
-          );
-  
-          if (wellnessKeywordIds.length) {
-            await Promise.all(
-              wellnessKeywordIds.map(async (i) => {
-                const data = await WellnessKeywords.findOne({
-                  attributes: ["name", "id"],
-                  where: { id: i },
-                });
-  
-                wellnessKeywordsData.push(data.dataValues);
-              })
-            );
-          }
-  
-          memberData.wellnessKeywords = wellnessKeywordsData;
-  
-          return memberData;
-        })
-      );
+        memberDetails
+          .filter((i) => i)
+          .map(async (i) => {
+            const memberData = i.dataValues;
 
+            const wellnessKeywordsData = [];
+
+            const wellnessMappingData = await WellnessMapping.findAll({
+              attributes: ["WellnessKeywordId"],
+              where: { genarelid: memberData.id, type: "member" },
+            });
+
+            const wellnessKeywordIds = wellnessMappingData.map(
+              (i) => i.dataValues.WellnessKeywordId
+            );
+
+            if (wellnessKeywordIds.length) {
+              await Promise.all(
+                wellnessKeywordIds.map(async (i) => {
+                  const data = await WellnessKeywords.findOne({
+                    attributes: ["name", "id"],
+                    where: { id: i },
+                  });
+
+                  wellnessKeywordsData.push(data.dataValues);
+                })
+              );
+            }
+
+            memberData.wellnessKeywords = wellnessKeywordsData;
+
+            return memberData;
+          })
+      );
 
       // getting all the events that is being mapped to the current wellnesskeywords
       const wellnessMappingDataForEvents = await Promise.all(
@@ -269,8 +278,7 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
                 memberDetails?.dataValues?.firstName;
               data.dataValues.memberLastName =
                 memberDetails?.dataValues?.lastName;
-              data.dataValues.memberTitle =
-                memberDetails?.dataValues?.title;
+              data.dataValues.memberTitle = memberDetails?.dataValues?.title;
               return data;
             })
           )
@@ -278,37 +286,39 @@ exports.getCategoryDetailsByIdController = async (req, res) => {
 
       // getting wellnessKeywords for events
       const finalEventDetails = await Promise.all(
-        eventDetails.filter((i) => i).map(async (i) => {
-          const eventData = i.dataValues;
-  
-          const wellnessKeywordsData = [];
-  
-          const wellnessMappingData = await WellnessMapping.findAll({
-            attributes: ["WellnessKeywordId"],
-            where: { genarelid: eventData.id, type: "event" },
-          });
-  
-          const wellnessKeywordIds = wellnessMappingData.map(
-            (i) => i.dataValues.WellnessKeywordId
-          );
-  
-          if (wellnessKeywordIds.length) {
-            await Promise.all(
-              wellnessKeywordIds.map(async (i) => {
-                const data = await WellnessKeywords.findOne({
-                  attributes: ["name", "id"],
-                  where: { id: i },
-                });
-  
-                wellnessKeywordsData.push(data.dataValues);
-              })
+        eventDetails
+          .filter((i) => i)
+          .map(async (i) => {
+            const eventData = i.dataValues;
+
+            const wellnessKeywordsData = [];
+
+            const wellnessMappingData = await WellnessMapping.findAll({
+              attributes: ["WellnessKeywordId"],
+              where: { genarelid: eventData.id, type: "event" },
+            });
+
+            const wellnessKeywordIds = wellnessMappingData.map(
+              (i) => i.dataValues.WellnessKeywordId
             );
-          }
-  
-          eventData.wellnessKeywords = wellnessKeywordsData;
-  
-          return eventData;
-        })
+
+            if (wellnessKeywordIds.length) {
+              await Promise.all(
+                wellnessKeywordIds.map(async (i) => {
+                  const data = await WellnessKeywords.findOne({
+                    attributes: ["name", "id"],
+                    where: { id: i },
+                  });
+
+                  wellnessKeywordsData.push(data.dataValues);
+                })
+              );
+            }
+
+            eventData.wellnessKeywords = wellnessKeywordsData;
+
+            return eventData;
+          })
       );
 
       data.dataValues.wellnessKeywords = wellnesskeywords.filter((i) => i);
